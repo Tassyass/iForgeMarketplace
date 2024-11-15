@@ -38,7 +38,8 @@ function ModelViewer({ modelUrl }: ModelViewerProps) {
     
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.outputEncoding = THREE.sRGBEncoding;
+    // Use colorSpace instead of outputEncoding
+    renderer.colorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
 
     // Controls
@@ -149,14 +150,21 @@ function ModelViewer({ modelUrl }: ModelViewerProps) {
 
   return (
     <div className="relative w-full aspect-square">
-      <div ref={containerRef} className="w-full h-full" />
+      <div 
+        ref={containerRef} 
+        className="w-full h-full" 
+        role="region" 
+        aria-label="3D model viewer"
+      />
       
       {/* Loading overlay */}
       {loadingProgress < 100 && !error && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-sm text-muted-foreground">Loading model... {loadingProgress}%</p>
+            <p className="text-sm text-muted-foreground" role="status">
+              Loading model... {loadingProgress}%
+            </p>
           </div>
         </div>
       )}
@@ -164,9 +172,11 @@ function ModelViewer({ modelUrl }: ModelViewerProps) {
       {/* Error message */}
       {error && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <div className="text-center text-destructive">
+          <div className="text-center text-destructive" role="alert">
             <p className="font-semibold">{error}</p>
-            <p className="text-sm text-muted-foreground mt-2">Please try refreshing the page</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Please try refreshing the page
+            </p>
           </div>
         </div>
       )}

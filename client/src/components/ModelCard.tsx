@@ -12,6 +12,7 @@ interface ModelCardProps {
 function ModelCard({ model }: ModelCardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const fallbackThumbnail = `https://via.placeholder.com/400x400.png?text=${encodeURIComponent(model.title)}`;
 
   const handleImageLoad = () => {
     setIsLoading(false);
@@ -29,10 +30,17 @@ function ModelCard({ model }: ModelCardProps) {
         whileTap={{ scale: 0.98 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
       >
-        <Card className="h-full cursor-pointer overflow-hidden group">
+        <Card 
+          className="h-full cursor-pointer overflow-hidden group"
+          role="article"
+          aria-label={`${model.title} by ${model.creatorName}`}
+        >
           <CardContent className="p-0">
             <div className="aspect-square relative">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" />
+              <div 
+                className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" 
+                aria-hidden="true"
+              />
               
               {/* Loading skeleton */}
               <AnimatePresence>
@@ -41,14 +49,15 @@ function ModelCard({ model }: ModelCardProps) {
                     className="absolute inset-0 bg-muted animate-pulse"
                     initial={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
+                    aria-hidden="true"
                   />
                 )}
               </AnimatePresence>
 
               {/* Main image with lazy loading */}
               <motion.img
-                src={model.thumbnailUrl}
-                alt={model.title}
+                src={model.thumbnailUrl || fallbackThumbnail}
+                alt={`3D model preview of ${model.title}`}
                 className={`object-cover w-full h-full rounded-t-lg transform group-hover:scale-105 transition-transform duration-300 ${
                   isLoading ? 'opacity-0' : 'opacity-100'
                 }`}
@@ -62,13 +71,18 @@ function ModelCard({ model }: ModelCardProps) {
 
               {/* Error fallback */}
               {hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+                <div 
+                  className="absolute inset-0 flex items-center justify-center bg-muted/50"
+                  role="alert"
+                  aria-label="Failed to load image"
+                >
                   <div className="text-center p-4">
                     <svg
                       className="w-10 h-10 mx-auto text-muted-foreground mb-2"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -100,7 +114,10 @@ function ModelCard({ model }: ModelCardProps) {
             <p className="text-sm text-muted-foreground">
               by {model.creatorName}
             </p>
-            <p className="font-medium">${(model.price / 100).toFixed(2)}</p>
+            <p className="font-medium">
+              <span className="sr-only">Price:</span>
+              ${(model.price / 100).toFixed(2)}
+            </p>
           </CardFooter>
         </Card>
       </motion.div>
