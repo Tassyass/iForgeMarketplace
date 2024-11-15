@@ -17,7 +17,7 @@ import {
   Wrench
 } from "lucide-react";
 
-export function HomePage() {
+function HomePage() {
   const { models, isLoading } = useModels();
 
   return (
@@ -213,3 +213,5 @@ export function HomePage() {
     </div>
   );
 }
+
+export default HomePage;

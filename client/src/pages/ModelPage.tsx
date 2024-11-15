@@ -33,7 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { Model, PrintOptions } from "@/lib/types";
 
-export function ModelPage() {
+function ModelPage() {
   const [, params] = useRoute("/model/:id");
   const { data: model, error } = useSWR<Model>(`/api/models/${params?.id}`);
   const { user } = useUser();
@@ -279,3 +279,5 @@ export function ModelPage() {
     </div>
   );
 }
+
+export default ModelPage;
