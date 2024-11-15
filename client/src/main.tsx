@@ -8,42 +8,48 @@ import Layout from "@/components/Layout";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Button } from "@/components/ui/button";
-import ErrorPage from "@/pages/ErrorPage";
+import { ErrorPage } from "@/pages/ErrorPage";
 
 // Lazy load pages with error boundaries
 const HomePage = lazy(() => 
-  import("@/pages/HomePage").catch(() => ({
-    default: () => <ErrorPage message="Failed to load Home page" />
+  import("@/pages/HomePage").then(module => ({
+    default: module.HomePage || module.default
   }))
 );
+
 const ModelPage = lazy(() => 
-  import("@/pages/ModelPage").catch(() => ({
-    default: () => <ErrorPage message="Failed to load Model page" />
+  import("@/pages/ModelPage").then(module => ({
+    default: module.ModelPage || module.default
   }))
 );
+
 const SearchPage = lazy(() => 
-  import("@/pages/SearchPage").catch(() => ({
-    default: () => <ErrorPage message="Failed to load Search page" />
+  import("@/pages/SearchPage").then(module => ({
+    default: module.SearchPage || module.default
   }))
 );
+
 const CategoriesPage = lazy(() => 
-  import("@/pages/CategoriesPage").catch(() => ({
-    default: () => <ErrorPage message="Failed to load Categories page" />
+  import("@/pages/CategoriesPage").then(module => ({
+    default: module.CategoriesPage || module.default
   }))
 );
+
 const ProfilePage = lazy(() => 
-  import("@/pages/ProfilePage").catch(() => ({
-    default: () => <ErrorPage message="Failed to load Profile page" />
+  import("@/pages/ProfilePage").then(module => ({
+    default: module.ProfilePage || module.default
   }))
 );
+
 const CreatePage = lazy(() => 
-  import("@/pages/CreatePage").catch(() => ({
-    default: () => <ErrorPage message="Failed to load Create page" />
+  import("@/pages/CreatePage").then(module => ({
+    default: module.CreatePage || module.default
   }))
 );
+
 const LoginPage = lazy(() => 
-  import("@/pages/LoginPage").catch(() => ({
-    default: () => <ErrorPage message="Failed to load Login page" />
+  import("@/pages/LoginPage").then(module => ({
+    default: module.LoginPage || module.default
   }))
 );
 
@@ -55,15 +61,17 @@ const PageLoader = () => (
 );
 
 // Error fallback component with retry functionality
-const ErrorFallback = ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => (
-  <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-    <div className="text-center space-y-4">
-      <h2 className="text-2xl font-bold text-destructive">Something went wrong</h2>
-      <p className="text-muted-foreground">{error.message}</p>
-      <Button onClick={resetErrorBoundary}>Try Again</Button>
+function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+  return (
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+      <div className="text-center space-y-4">
+        <h2 className="text-2xl font-bold text-destructive">Something went wrong</h2>
+        <p className="text-muted-foreground">{error.message}</p>
+        <Button onClick={resetErrorBoundary}>Try Again</Button>
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 // Enhanced SWR configuration
 const swrConfig = {
@@ -71,7 +79,6 @@ const swrConfig = {
   revalidateOnFocus: false,
   revalidateOnReconnect: false,
   shouldRetryOnError: (err: any) => {
-    // Don't retry on auth errors or server errors
     if (err.status === 401 || err.status >= 500) return false;
     return true;
   },
@@ -85,48 +92,36 @@ const swrConfig = {
   errorRetryInterval: 5000,
 };
 
-const App = () => (
-  <StrictMode>
-    <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <SWRConfig value={swrConfig}>
-        <Layout>
-          <Suspense fallback={<PageLoader />}>
-            <Switch>
-              <Route path="/" component={HomePage} />
-              <Route path="/model/:id" component={ModelPage} />
-              <Route path="/search" component={SearchPage} />
-              <Route path="/categories" component={CategoriesPage} />
-              <Route path="/profile" component={ProfilePage} />
-              <Route path="/create" component={CreatePage} />
-              <Route path="/login" component={LoginPage} />
-              <Route component={ErrorPage} />
-            </Switch>
-          </Suspense>
-        </Layout>
-        <Toaster />
-      </SWRConfig>
-    </ErrorBoundary>
-  </StrictMode>
-);
+function App() {
+  return (
+    <StrictMode>
+      <ErrorBoundary fallbackRender={ErrorFallback}>
+        <SWRConfig value={swrConfig}>
+          <Layout>
+            <Suspense fallback={<PageLoader />}>
+              <Switch>
+                <Route path="/" component={HomePage} />
+                <Route path="/model/:id" component={ModelPage} />
+                <Route path="/search" component={SearchPage} />
+                <Route path="/categories" component={CategoriesPage} />
+                <Route path="/profile" component={ProfilePage} />
+                <Route path="/create" component={CreatePage} />
+                <Route path="/login" component={LoginPage} />
+                <Route component={ErrorPage} />
+              </Switch>
+            </Suspense>
+          </Layout>
+          <Toaster />
+        </SWRConfig>
+      </ErrorBoundary>
+    </StrictMode>
+  );
+}
 
-// Create root only once and store it in a variable outside of HMR scope
-let root: ReturnType<typeof createRoot> | null = null;
+// Create root element
 const rootElement = document.getElementById("root");
-
 if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-if (!root) {
-  root = createRoot(rootElement);
-  root.render(<App />);
-}
-
-// Safe HMR handling
-if (import.meta.hot) {
-  import.meta.hot.accept(() => {
-    if (root) {
-      root.render(<App />);
-    }
-  });
-}
+createRoot(rootElement).render(<App />);

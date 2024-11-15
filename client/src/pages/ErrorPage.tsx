@@ -4,7 +4,7 @@ interface ErrorPageProps {
   message?: string;
 }
 
-function ErrorPage({ message }: ErrorPageProps) {
+export function ErrorPage({ message }: ErrorPageProps) {
   return (
     <div className="container min-h-[calc(100vh-4rem)] flex items-center justify-center">
       <div className="text-center space-y-4">
@@ -21,4 +21,5 @@ function ErrorPage({ message }: ErrorPageProps) {
   );
 }
 
+// Also export as default for backward compatibility
 export default ErrorPage;
