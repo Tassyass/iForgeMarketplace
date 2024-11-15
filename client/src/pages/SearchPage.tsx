@@ -8,10 +8,10 @@ import { Search, ChevronLeft } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { debounce } from "lodash-es";
 import { useInView } from "react-intersection-observer";
+import { useSearchParams } from "@/hooks/use-search-params";
 
 function SearchPage() {
-  const [location, setLocation] = useLocation();
-  const searchParams = new URLSearchParams(location.split("?")[1] || "");
+  const [searchParams, setSearchParams] = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
   const [searchTerm, setSearchTerm] = useState(initialQuery);
   const { models, isLoading } = useModels();
@@ -22,9 +22,9 @@ function SearchPage() {
     debounce((term: string) => {
       const newParams = new URLSearchParams();
       if (term) newParams.set("q", term);
-      setLocation(`/search${term ? `?${newParams.toString()}` : ""}`);
+      setSearchParams(newParams);
     }, 300),
-    [setLocation]
+    [setSearchParams]
   );
 
   useEffect(() => {

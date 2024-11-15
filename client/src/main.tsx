@@ -10,13 +10,37 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Button } from "@/components/ui/button";
 import ErrorPage from "@/pages/ErrorPage";
 
-// Lazy load pages
-const HomePage = lazy(() => import("@/pages/HomePage"));
-const ModelPage = lazy(() => import("@/pages/ModelPage"));
-const SearchPage = lazy(() => import("@/pages/SearchPage"));
-const CategoriesPage = lazy(() => import("@/pages/CategoriesPage"));
-const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
-const CreatePage = lazy(() => import("@/pages/CreatePage"));
+// Lazy load pages with error boundaries
+const HomePage = lazy(() => 
+  import("@/pages/HomePage").catch(() => ({
+    default: () => <ErrorPage message="Failed to load Home page" />
+  }))
+);
+const ModelPage = lazy(() => 
+  import("@/pages/ModelPage").catch(() => ({
+    default: () => <ErrorPage message="Failed to load Model page" />
+  }))
+);
+const SearchPage = lazy(() => 
+  import("@/pages/SearchPage").catch(() => ({
+    default: () => <ErrorPage message="Failed to load Search page" />
+  }))
+);
+const CategoriesPage = lazy(() => 
+  import("@/pages/CategoriesPage").catch(() => ({
+    default: () => <ErrorPage message="Failed to load Categories page" />
+  }))
+);
+const ProfilePage = lazy(() => 
+  import("@/pages/ProfilePage").catch(() => ({
+    default: () => <ErrorPage message="Failed to load Profile page" />
+  }))
+);
+const CreatePage = lazy(() => 
+  import("@/pages/CreatePage").catch(() => ({
+    default: () => <ErrorPage message="Failed to load Create page" />
+  }))
+);
 
 // Optimized loading fallback
 const PageLoader = () => (
@@ -26,17 +50,17 @@ const PageLoader = () => (
 );
 
 // Error fallback component with retry functionality
-const ErrorFallback = ({ error }: { error: Error }) => (
+const ErrorFallback = ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => (
   <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
     <div className="text-center space-y-4">
       <h2 className="text-2xl font-bold text-destructive">Something went wrong</h2>
       <p className="text-muted-foreground">{error.message}</p>
-      <Button onClick={() => window.location.reload()}>Try Again</Button>
+      <Button onClick={resetErrorBoundary}>Try Again</Button>
     </div>
   </div>
 );
 
-function App() {
+const App = () => {
   return (
     <StrictMode>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
@@ -45,7 +69,6 @@ function App() {
             fetcher,
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
-            suspense: false,
             shouldRetryOnError: (err: any) => {
               if (err.status === 401) return false;
               return true;
@@ -75,20 +98,13 @@ function App() {
       </ErrorBoundary>
     </StrictMode>
   );
-}
+};
 
-// Create root only once and store it in a module-level variable
-let root: ReturnType<typeof createRoot> | null = null;
+// Create root only once
 const rootElement = document.getElementById("root");
+if (!rootElement) throw new Error("Root element not found");
 
-if (!rootElement) {
-  throw new Error("Root element not found");
-}
-
-if (!root) {
-  root = createRoot(rootElement);
-}
-
+const root = createRoot(rootElement);
 root.render(<App />);
 
 // Enable HMR with type safety
