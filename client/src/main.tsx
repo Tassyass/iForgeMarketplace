@@ -12,52 +12,52 @@ import { ErrorPage } from "@/pages/ErrorPage";
 
 // Development logging utility
 const logDev = (...args: any[]) => {
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.log('[iForge]', ...args);
   }
 };
 
-// Lazy load pages with error boundaries and proper error handling
+// Enhanced error handling for module loading
 const lazyLoadPage = (importFn: () => Promise<any>, pageName: string) =>
-  lazy(() =>
-    importFn()
-      .then(module => ({
-        default: module.default || module[pageName]
-      }))
-      .catch(error => {
-        logDev(`Failed to load ${pageName}:`, error);
-        return {
-          default: () => (
-            <ErrorPage message={`Failed to load ${pageName}. Please try again.`} />
-          )
-        };
-      })
-  );
+  lazy(async () => {
+    try {
+      const module = await importFn();
+      // Prefer default export, fallback to named export
+      return { default: module.default || module[pageName] };
+    } catch (error) {
+      logDev(`Failed to load ${pageName}:`, error);
+      return {
+        default: () => (
+          <ErrorPage message={`Failed to load ${pageName}. Please try again.`} />
+        )
+      };
+    }
+  });
 
-// Lazy loaded pages
-const HomePage = lazyLoadPage(() => import("@/pages/HomePage"), "HomePage");
-const ModelPage = lazyLoadPage(() => import("@/pages/ModelPage"), "ModelPage");
-const SearchPage = lazyLoadPage(() => import("@/pages/SearchPage"), "SearchPage");
-const CategoriesPage = lazyLoadPage(() => import("@/pages/CategoriesPage"), "CategoriesPage");
-const ProfilePage = lazyLoadPage(() => import("@/pages/ProfilePage"), "ProfilePage");
-const CreatePage = lazyLoadPage(() => import("@/pages/CreatePage"), "CreatePage");
-const LoginPage = lazyLoadPage(() => import("@/pages/LoginPage"), "LoginPage");
+// Lazy loaded pages with consistent exports
+export const HomePage = lazyLoadPage(() => import("@/pages/HomePage"), "HomePage");
+export const ModelPage = lazyLoadPage(() => import("@/pages/ModelPage"), "ModelPage");
+export const SearchPage = lazyLoadPage(() => import("@/pages/SearchPage"), "SearchPage");
+export const CategoriesPage = lazyLoadPage(() => import("@/pages/CategoriesPage"), "CategoriesPage");
+export const ProfilePage = lazyLoadPage(() => import("@/pages/ProfilePage"), "ProfilePage");
+export const CreatePage = lazyLoadPage(() => import("@/pages/CreatePage"), "CreatePage");
+export const LoginPage = lazyLoadPage(() => import("@/pages/LoginPage"), "LoginPage");
 
-// Optimized loading fallback with proper error states
-const PageLoader = () => (
+// Loading component with proper error boundary
+export const PageLoader = () => (
   <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
   </div>
 );
 
-// Enhanced error fallback with detailed reporting
-function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+// Enhanced error fallback with development details
+export function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
       <div className="text-center space-y-4">
         <h2 className="text-2xl font-bold text-destructive">Something went wrong</h2>
         <p className="text-muted-foreground">{error.message}</p>
-        {import.meta.env.DEV && (
+        {process.env.NODE_ENV === 'development' && (
           <pre className="mt-2 text-sm text-muted-foreground overflow-auto max-w-md">
             {error.stack}
           </pre>
@@ -68,7 +68,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
   );
 }
 
-// Enhanced SWR configuration with better error handling and reconnection strategy
+// Enhanced SWR configuration
 const swrConfig = {
   fetcher,
   revalidateOnFocus: false,
@@ -87,19 +87,11 @@ const swrConfig = {
   },
   dedupingInterval: 5000,
   errorRetryCount: 3,
-  errorRetryInterval: (retryCount: number) => Math.min(1000 * (2 ** retryCount), 30000),
-  onErrorRetry: (error: any, key: string, config: any, revalidate: any, { retryCount }: { retryCount: number }) => {
-    if (error.status === 401 || error.status >= 500) return;
-    if (retryCount >= 3) return;
-    
-    setTimeout(() => {
-      logDev(`Retrying request for ${key}, attempt ${retryCount + 1}`);
-      revalidate({ retryCount });
-    }, Math.min(1000 * (2 ** retryCount), 30000));
-  },
+  errorRetryInterval: 5000,
 };
 
-function App() {
+// App component with proper error boundaries
+export function App() {
   return (
     <StrictMode>
       <ErrorBoundary 
@@ -134,7 +126,7 @@ function App() {
   );
 }
 
-// Root creation with proper cleanup and HMR handling
+// Single root instance management
 let root: ReturnType<typeof createRoot> | null = null;
 const rootElement = document.getElementById("root");
 
@@ -142,46 +134,59 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-function render() {
-  if (!root) {
-    logDev('Creating root and performing initial render');
-    root = createRoot(rootElement);
-  }
-  
+// Enhanced root creation with proper cleanup
+function createOrUpdateRoot() {
   try {
+    if (!root) {
+      logDev('Creating new root instance');
+      root = createRoot(rootElement);
+    }
     root.render(<App />);
   } catch (error) {
-    console.error('[iForge] Render error:', error);
-    // Attempt recovery by recreating root
+    console.error('[iForge] Root creation/render error:', error);
+    // Cleanup and retry on critical errors
     if (root) {
-      root.unmount();
+      try {
+        root.unmount();
+      } catch (unmountError) {
+        console.error('[iForge] Unmount error:', unmountError);
+      }
       root = null;
     }
-    render();
+    // Attempt recovery
+    createOrUpdateRoot();
   }
 }
 
-// HMR handling
-if (import.meta.hot) {
-  import.meta.hot.accept((newModule) => {
-    logDev('HMR update received');
-    try {
-      render();
-    } catch (error) {
-      console.error('[iForge] HMR update failed:', error);
-      // Force reload on critical HMR failure
-      window.location.reload();
-    }
-  });
+// Development HMR handling
+if (process.env.NODE_ENV === 'development') {
+  if (import.meta.hot) {
+    // Proper cleanup before updates
+    import.meta.hot.dispose(() => {
+      logDev('Cleaning up before HMR update');
+      if (root) {
+        try {
+          root.unmount();
+          root = null;
+        } catch (error) {
+          console.error('[iForge] HMR cleanup error:', error);
+        }
+      }
+    });
 
-  // Cleanup on HMR dispose
-  import.meta.hot.dispose(() => {
-    logDev('Cleaning up before HMR update');
-    if (root) {
-      root.unmount();
-      root = null;
-    }
-  });
+    // Handle updates with proper error boundaries
+    import.meta.hot.accept(() => {
+      logDev('HMR update received');
+      try {
+        createOrUpdateRoot();
+      } catch (error) {
+        console.error('[iForge] HMR update failed:', error);
+        // Force reload on critical failure
+        window.location.reload();
+      }
+    });
+  }
 }
 
-render();
+// Initial render
+createOrUpdateRoot();
