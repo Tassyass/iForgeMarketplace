@@ -17,20 +17,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <header className="border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/">
-            <img 
-              src="/Logo iForge-8.png" 
-              alt="iForge" 
-              className="h-8" 
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                // Fallback to text if image fails to load
-                e.currentTarget.style.display = 'none';
-                const textLogo = document.createElement('span');
-                textLogo.textContent = 'iForge';
-                textLogo.className = 'text-2xl font-bold text-primary';
-                e.currentTarget.parentNode?.appendChild(textLogo);
-              }}
-            />
+            <div className="h-8 relative">
+              <img 
+                src="/Logo iForge-8.png" 
+                alt="iForge" 
+                className="h-8 w-auto object-contain" 
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.style.display = 'none';
+                  // Create fallback text logo
+                  const textLogo = document.createElement('span');
+                  textLogo.textContent = 'iForge';
+                  textLogo.className = 'text-2xl font-bold text-primary';
+                  e.currentTarget.parentNode?.appendChild(textLogo);
+                }}
+              />
+            </div>
           </Link>
 
           <nav className="flex items-center gap-6">
