@@ -1,6 +1,6 @@
 import { type Express } from "express";
 import { db } from "db";
-import { models, users, orders } from "db/schema";
+import { models, users, analytics } from "db/schema";
 import { eq } from "drizzle-orm";
 import { setupAuth } from "./auth";
 import multer from "multer";
@@ -66,13 +66,16 @@ export function registerRoutes(app: Express) {
   // Get all models
   app.get("/api/models", async (req, res) => {
     try {
-      const allModels = await db.select().from(models)
+      const allModels = await db.select()
+        .from(models)
         .leftJoin(users, eq(models.creatorId, users.id));
+
       res.json(allModels.map(model => ({
         ...model.models,
-        creatorName: model.users.username
+        creatorName: model.users?.username ?? 'Unknown Creator'
       })));
     } catch (error) {
+      console.error('Error fetching models:', error);
       res.status(500).json({ message: "Error fetching models" });
     }
   });
@@ -80,9 +83,14 @@ export function registerRoutes(app: Express) {
   // Get single model
   app.get("/api/models/:id", async (req, res) => {
     try {
+      const modelId = parseInt(req.params.id);
+      if (isNaN(modelId)) {
+        return res.status(400).json({ message: "Invalid model ID" });
+      }
+
       const [model] = await db.select()
         .from(models)
-        .where(eq(models.id, parseInt(req.params.id)))
+        .where(eq(models.id, modelId))
         .leftJoin(users, eq(models.creatorId, users.id))
         .limit(1);
 
@@ -92,9 +100,10 @@ export function registerRoutes(app: Express) {
 
       res.json({
         ...model.models,
-        creatorName: model.users.username
+        creatorName: model.users?.username ?? 'Unknown Creator'
       });
     } catch (error) {
+      console.error('Error fetching model:', error);
       res.status(500).json({ message: "Error fetching model" });
     }
   });
@@ -106,14 +115,14 @@ export function registerRoutes(app: Express) {
       { name: 'thumbnail', maxCount: 1 }
     ]),
     async (req, res) => {
-      if (!req.isAuthenticated()) {
+      if (!req.isAuthenticated() || !req.user?.id) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
       try {
         const files = req.files as { [fieldname: string]: Express.Multer.File[] };
         
-        if (!files.model || !files.thumbnail) {
+        if (!files.model?.[0] || !files.thumbnail?.[0]) {
           return res.status(400).json({ message: "Both model and thumbnail files are required" });
         }
 
@@ -147,9 +156,22 @@ export function registerRoutes(app: Express) {
             directPrintEnabled: directPrintEnabled === 'true',
             creatorId: req.user.id,
             modelUrl: `/uploads/models/${modelFile.filename}`,
-            thumbnailUrl: `/uploads/thumbnails/${thumbnailFile.filename}`
+            thumbnailUrl: `/uploads/thumbnails/${thumbnailFile.filename}`,
+            status: 'pending'
           })
           .returning();
+
+        if (!newModel?.id) {
+          throw new Error('Failed to create model record');
+        }
+
+        // Log model creation in analytics
+        await db.insert(analytics).values({
+          type: 'model_created',
+          modelId: newModel.id,
+          userId: req.user.id,
+          metadata: { category, directPrintEnabled }
+        });
 
         res.json(newModel);
       } catch (error) {
@@ -166,23 +188,92 @@ export function registerRoutes(app: Express) {
     }
   );
 
-  // Create order (protected)
-  app.post("/api/orders", async (req, res) => {
-    if (!req.isAuthenticated()) {
+  // Purchase model (protected)
+  app.post("/api/models/:id/purchase", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.id) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
     try {
-      const [newOrder] = await db.insert(orders)
-        .values({
-          ...req.body,
-          userId: req.user.id
-        })
-        .returning();
+      const modelId = parseInt(req.params.id);
+      if (isNaN(modelId)) {
+        return res.status(400).json({ message: "Invalid model ID" });
+      }
 
-      res.json(newOrder);
+      const [model] = await db.select()
+        .from(models)
+        .where(eq(models.id, modelId))
+        .limit(1);
+
+      if (!model) {
+        return res.status(404).json({ message: "Model not found" });
+      }
+
+      if (model.status !== 'active') {
+        return res.status(400).json({ message: "Model is not available for purchase" });
+      }
+
+      // Log purchase in analytics
+      await db.insert(analytics).values({
+        type: 'model_purchased',
+        modelId: model.id,
+        userId: req.user.id,
+        metadata: { price: model.price }
+      });
+
+      res.json({ message: "Purchase successful" });
     } catch (error) {
-      res.status(500).json({ message: "Error creating order" });
+      console.error('Error processing purchase:', error);
+      res.status(500).json({ message: "Error processing purchase" });
+    }
+  });
+
+  // Request print (protected)
+  app.post("/api/models/:id/print", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user?.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+      const modelId = parseInt(req.params.id);
+      if (isNaN(modelId)) {
+        return res.status(400).json({ message: "Invalid model ID" });
+      }
+
+      const [model] = await db.select()
+        .from(models)
+        .where(eq(models.id, modelId))
+        .limit(1);
+
+      if (!model) {
+        return res.status(404).json({ message: "Model not found" });
+      }
+
+      if (!model.directPrintEnabled) {
+        return res.status(400).json({ message: "Direct printing not available for this model" });
+      }
+
+      if (model.status !== 'active') {
+        return res.status(400).json({ message: "Model is not available for printing" });
+      }
+
+      const printOptions = req.body.printOptions;
+      if (!printOptions?.material || !printOptions?.color || !printOptions?.size) {
+        return res.status(400).json({ message: "Invalid print options" });
+      }
+
+      // Log print request in analytics
+      await db.insert(analytics).values({
+        type: 'print_requested',
+        modelId: model.id,
+        userId: req.user.id,
+        metadata: { printOptions }
+      });
+
+      res.json({ message: "Print request submitted" });
+    } catch (error) {
+      console.error('Error processing print request:', error);
+      res.status(500).json({ message: "Error processing print request" });
     }
   });
 }

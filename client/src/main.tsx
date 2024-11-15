@@ -1,5 +1,5 @@
 import { StrictMode, Suspense, lazy } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 import { Switch, Route } from "wouter";
 import "./index.css";
 import { SWRConfig } from "swr";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorPage } from "@/pages/ErrorPage";
 
 // Development logging utility
-const logDev = (...args: any[]) => {
+const logDev = (...args: unknown[]): void => {
   if (process.env.NODE_ENV === 'development') {
     console.log('[iForge]', ...args);
   }
@@ -22,7 +22,6 @@ const lazyLoadPage = (importFn: () => Promise<any>, pageName: string) =>
   lazy(async () => {
     try {
       const module = await importFn();
-      // Prefer default export, fallback to named export
       return { default: module.default || module[pageName] };
     } catch (error) {
       logDev(`Failed to load ${pageName}:`, error);
@@ -42,6 +41,7 @@ export const CategoriesPage = lazyLoadPage(() => import("@/pages/CategoriesPage"
 export const ProfilePage = lazyLoadPage(() => import("@/pages/ProfilePage"), "ProfilePage");
 export const CreatePage = lazyLoadPage(() => import("@/pages/CreatePage"), "CreatePage");
 export const LoginPage = lazyLoadPage(() => import("@/pages/LoginPage"), "LoginPage");
+export const AdminPage = lazyLoadPage(() => import("@/pages/AdminPage"), "AdminPage");
 
 // Loading component with proper error boundary
 export const PageLoader = () => (
@@ -73,16 +73,19 @@ const swrConfig = {
   fetcher,
   revalidateOnFocus: false,
   revalidateOnReconnect: true,
-  shouldRetryOnError: (err: any) => {
-    if (err.status === 401 || err.status >= 500) {
-      logDev('Not retrying due to error status:', err.status);
-      return false;
+  shouldRetryOnError: (err: unknown) => {
+    if (err && typeof err === 'object' && 'status' in err) {
+      const status = (err as { status: number }).status;
+      if (status === 401 || status >= 500) return false;
     }
     return true;
   },
-  onError: (error: any) => {
-    if (error.status !== 401) {
-      console.error('[iForge] API Error:', error.message || 'An unexpected error occurred');
+  onError: (error: unknown) => {
+    if (error && typeof error === 'object' && 'status' in error) {
+      const status = (error as { status: number }).status;
+      if (status !== 401) {
+        console.error('[iForge] API Error:', error);
+      }
     }
   },
   dedupingInterval: 5000,
@@ -90,18 +93,10 @@ const swrConfig = {
   errorRetryInterval: 5000,
 };
 
-// App component with proper error boundaries
 export function App() {
   return (
     <StrictMode>
-      <ErrorBoundary 
-        onError={(error: Error) => {
-          logDev('ErrorBoundary caught error:', error);
-        }}
-        onReset={() => {
-          logDev('ErrorBoundary reset');
-        }}
-      >
+      <ErrorBoundary>
         <SWRConfig value={swrConfig}>
           <Layout>
             <Suspense fallback={<PageLoader />}>
@@ -113,6 +108,7 @@ export function App() {
                 <Route path="/profile" component={ProfilePage} />
                 <Route path="/create" component={CreatePage} />
                 <Route path="/login" component={LoginPage} />
+                <Route path="/admin" component={AdminPage} />
                 <Route>
                   {() => <ErrorPage message="Page not found" />}
                 </Route>
@@ -127,7 +123,7 @@ export function App() {
 }
 
 // Single root instance management
-let root: ReturnType<typeof createRoot> | null = null;
+let root: Root | null = null;
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
@@ -144,7 +140,6 @@ function createOrUpdateRoot() {
     root.render(<App />);
   } catch (error) {
     console.error('[iForge] Root creation/render error:', error);
-    // Cleanup and retry on critical errors
     if (root) {
       try {
         root.unmount();
@@ -153,39 +148,42 @@ function createOrUpdateRoot() {
       }
       root = null;
     }
-    // Attempt recovery
     createOrUpdateRoot();
   }
 }
 
 // Development HMR handling
-if (process.env.NODE_ENV === 'development') {
-  if (import.meta.hot) {
-    // Proper cleanup before updates
-    import.meta.hot.dispose(() => {
-      logDev('Cleaning up before HMR update');
-      if (root) {
-        try {
-          root.unmount();
-          root = null;
-        } catch (error) {
-          console.error('[iForge] HMR cleanup error:', error);
-        }
-      }
-    });
-
-    // Handle updates with proper error boundaries
-    import.meta.hot.accept(() => {
-      logDev('HMR update received');
-      try {
-        createOrUpdateRoot();
-      } catch (error) {
-        console.error('[iForge] HMR update failed:', error);
-        // Force reload on critical failure
-        window.location.reload();
-      }
-    });
+declare global {
+  interface ImportMeta {
+    hot?: {
+      accept: (callback: () => void) => void;
+      dispose: (callback: () => void) => void;
+    };
   }
+}
+
+if (process.env.NODE_ENV === 'development' && import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    logDev('Cleaning up before HMR update');
+    if (root) {
+      try {
+        root.unmount();
+        root = null;
+      } catch (error) {
+        console.error('[iForge] HMR cleanup error:', error);
+      }
+    }
+  });
+
+  import.meta.hot.accept(() => {
+    logDev('HMR update received');
+    try {
+      createOrUpdateRoot();
+    } catch (error) {
+      console.error('[iForge] HMR update failed:', error);
+      window.location.reload();
+    }
+  });
 }
 
 // Initial render

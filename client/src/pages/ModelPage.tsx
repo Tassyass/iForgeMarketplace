@@ -35,7 +35,7 @@ import type { Model, PrintOptions } from "@/lib/types";
 
 function ModelPage() {
   const [, params] = useRoute("/model/:id");
-  const { data: model, error } = useSWR<Model>(`/api/models/${params?.id}`);
+  const { data: model, error, mutate } = useSWR<Model>(`/api/models/${params?.id}`);
   const { user } = useUser();
   const { toast } = useToast();
   const [printOptions, setPrintOptions] = useState<PrintOptions>({
@@ -75,13 +75,9 @@ function ModelPage() {
     }
 
     try {
-      const response = await fetch("/api/orders", {
+      const response = await fetch(`/api/models/${model.id}/purchase`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          modelId: model.id,
-          type: "purchase",
-        }),
+        headers: { "Content-Type": "application/json" }
       });
 
       if (!response.ok) throw new Error("Purchase failed");
@@ -90,6 +86,9 @@ function ModelPage() {
         title: "Success!",
         description: "Model purchased successfully",
       });
+      
+      // Refresh model data
+      await mutate();
     } catch (error) {
       toast({
         title: "Error",
@@ -111,14 +110,10 @@ function ModelPage() {
 
     setIsOrdering(true);
     try {
-      const response = await fetch("/api/orders", {
+      const response = await fetch(`/api/models/${model.id}/print`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          modelId: model.id,
-          type: "print",
-          printOptions,
-        }),
+        body: JSON.stringify({ printOptions }),
       });
 
       if (!response.ok) throw new Error("Print order failed");
@@ -127,6 +122,9 @@ function ModelPage() {
         title: "Success!",
         description: "Print order placed successfully",
       });
+      
+      // Refresh model data
+      await mutate();
     } catch (error) {
       toast({
         title: "Error",
@@ -165,18 +163,23 @@ function ModelPage() {
                     Direct Print Available
                   </Badge>
                 )}
+                {model.status && (
+                  <Badge variant={model.status === 'active' ? 'default' : 'secondary'} className="text-sm px-3 py-1">
+                    {model.status.charAt(0).toUpperCase() + model.status.slice(1)}
+                  </Badge>
+                )}
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button
                 className="w-full h-12 text-lg font-semibold"
                 onClick={handlePurchase}
-                disabled={!user}
+                disabled={!user || model.status !== 'active'}
               >
                 Purchase Model
               </Button>
 
-              {model.directPrintEnabled && (
+              {model.directPrintEnabled && model.status === 'active' && (
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full h-12 text-lg font-semibold">
@@ -196,8 +199,8 @@ function ModelPage() {
                         <label className="text-sm font-medium">Material</label>
                         <Select
                           value={printOptions.material}
-                          onValueChange={(value) =>
-                            setPrintOptions({ ...printOptions, material: value })
+                          onValueChange={(value: any) =>
+                            setPrintOptions((prev) => ({ ...prev, material: value }))
                           }
                         >
                           <SelectTrigger className="w-full h-11">
@@ -215,8 +218,8 @@ function ModelPage() {
                         <label className="text-sm font-medium">Color</label>
                         <Select
                           value={printOptions.color}
-                          onValueChange={(value) =>
-                            setPrintOptions({ ...printOptions, color: value })
+                          onValueChange={(value: any) =>
+                            setPrintOptions((prev) => ({ ...prev, color: value }))
                           }
                         >
                           <SelectTrigger className="w-full h-11">
@@ -237,10 +240,10 @@ function ModelPage() {
                         <Select
                           value={printOptions.size.toString()}
                           onValueChange={(value) =>
-                            setPrintOptions({
-                              ...printOptions,
+                            setPrintOptions((prev) => ({
+                              ...prev,
                               size: parseInt(value),
-                            })
+                            }))
                           }
                         >
                           <SelectTrigger className="w-full h-11">
@@ -277,18 +280,33 @@ function ModelPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center py-2">
-                <span className="text-sm font-medium">Recommended Material</span>
-                <span className="text-sm">PLA</span>
+                <span className="text-sm font-medium">File Format</span>
+                <span className="text-sm">{model.fileFormat?.toUpperCase() || 'GLB'}</span>
               </div>
               <Separator className="bg-border/50" />
               <div className="flex justify-between items-center py-2">
-                <span className="text-sm font-medium">Print Time (approx)</span>
-                <span className="text-sm">4-6 hours</span>
+                <span className="text-sm font-medium">File Size</span>
+                <span className="text-sm">
+                  {model.fileSize 
+                    ? `${(model.fileSize / (1024 * 1024)).toFixed(2)} MB`
+                    : 'N/A'}
+                </span>
               </div>
               <Separator className="bg-border/50" />
               <div className="flex justify-between items-center py-2">
-                <span className="text-sm font-medium">Support Required</span>
-                <span className="text-sm">Minimal</span>
+                <span className="text-sm font-medium">Polygon Count</span>
+                <span className="text-sm">
+                  {model.polygonCount?.toLocaleString() || 'N/A'}
+                </span>
+              </div>
+              <Separator className="bg-border/50" />
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm font-medium">Last Updated</span>
+                <span className="text-sm">
+                  {model.lastModified 
+                    ? new Date(model.lastModified).toLocaleDateString()
+                    : new Date(model.createdAt).toLocaleDateString()}
+                </span>
               </div>
             </CardContent>
           </Card>

@@ -7,6 +7,9 @@ export const users = pgTable("users", {
   username: text("username").unique().notNull(),
   password: text("password").notNull(),
   role: text("role").default("user").notNull(),
+  isAdmin: boolean("is_admin").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastLogin: timestamp("last_login"),
 });
 
 export const models = pgTable("models", {
@@ -18,16 +21,29 @@ export const models = pgTable("models", {
   modelUrl: text("model_url").notNull(),
   creatorId: integer("creator_id").references(() => users.id).notNull(),
   category: text("category").notNull(),
+  status: text("status").default("pending").notNull(), // pending, approved, rejected
   directPrintEnabled: boolean("direct_print_enabled").default(false),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at"),
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  reviewNote: text("review_note"),
 });
 
-export const orders = pgTable("orders", {
+export const categories = pgTable("categories", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  modelId: integer("model_id").references(() => models.id).notNull(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  status: text("status").default("pending").notNull(),
-  printOptions: jsonb("print_options"),
+  name: text("name").unique().notNull(),
+  slug: text("slug").unique().notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at"),
+});
+
+export const analytics = pgTable("analytics", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  type: text("type").notNull(), // pageview, model_view, download, purchase
+  modelId: integer("model_id").references(() => models.id),
+  userId: integer("user_id").references(() => users.id),
+  metadata: jsonb("metadata"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -41,7 +57,12 @@ export const selectModelSchema = createSelectSchema(models);
 export type InsertModel = z.infer<typeof insertModelSchema>;
 export type Model = z.infer<typeof selectModelSchema>;
 
-export const insertOrderSchema = createInsertSchema(orders);
-export const selectOrderSchema = createSelectSchema(orders);
-export type InsertOrder = z.infer<typeof insertOrderSchema>;
-export type Order = z.infer<typeof selectOrderSchema>;
+export const insertCategorySchema = createInsertSchema(categories);
+export const selectCategorySchema = createSelectSchema(categories);
+export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type Category = z.infer<typeof selectCategorySchema>;
+
+export const insertAnalyticsSchema = createInsertSchema(analytics);
+export const selectAnalyticsSchema = createSelectSchema(analytics);
+export type InsertAnalytics = z.infer<typeof insertAnalyticsSchema>;
+export type Analytics = z.infer<typeof selectAnalyticsSchema>;

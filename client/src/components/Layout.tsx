@@ -16,14 +16,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Menu, X, Plus } from "lucide-react";
+import { Search, Menu, X, Plus, Settings } from "lucide-react";
 import { memo, useState, Suspense, useCallback } from "react";
 
 // Skip link component
 const SkipLink = memo(() => (
   <a
     href="#main-content"
-    className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-primary-foreground px-4 py-2 rounded focus:z-50"
+    className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-primary-foreground px-4 py-2 rounded focus:z-[100]"
   >
     Skip to main content
   </a>
@@ -85,8 +85,8 @@ function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       <SkipLink />
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto h-16 px-4">
+      <header className="sticky top-0 z-[100] w-full border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex h-full items-center justify-between gap-4">
             <HeaderContent isSearchOpen={isSearchOpen} />
 
@@ -144,10 +144,18 @@ function Layout({ children }: { children: React.ReactNode }) {
                         </Avatar>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="z-[100]">
                       <DropdownMenuItem asChild>
                         <Link href="/profile">Profile</Link>
                       </DropdownMenuItem>
+                      {user.isAdmin && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin">
+                            <Settings className="mr-2 h-4 w-4" />
+                            Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => logout()}>
                         Logout
                       </DropdownMenuItem>
@@ -180,7 +188,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       </main>
 
       <footer className="border-t">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-6">
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} iForge. All rights reserved.
           </p>
