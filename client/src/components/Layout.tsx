@@ -117,8 +117,8 @@ function Layout({ children }: { children: React.ReactNode }) {
             </form>
 
             <nav className="flex items-center gap-4">
-              <Link href="/categories">
-                <Button variant="ghost">Browse</Button>
+              <Link href="/create">
+                <Button variant="ghost">Create</Button>
               </Link>
 
               {user && (
