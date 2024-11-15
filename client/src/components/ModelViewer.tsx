@@ -8,7 +8,7 @@ interface ModelViewerProps {
   modelUrl: string;
 }
 
-function ModelViewer({ modelUrl }: ModelViewerProps) {
+export function ModelViewer({ modelUrl }: ModelViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +38,6 @@ function ModelViewer({ modelUrl }: ModelViewerProps) {
     
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    // Use colorSpace instead of outputEncoding
     renderer.colorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
 
@@ -183,5 +182,3 @@ function ModelViewer({ modelUrl }: ModelViewerProps) {
     </div>
   );
 }
-
-export default ModelViewer;
