@@ -31,7 +31,7 @@ function ModelCard({ model }: ModelCardProps) {
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
       >
         <Card 
-          className="h-full cursor-pointer overflow-hidden group"
+          className="h-full cursor-pointer overflow-hidden group border-2"
           role="article"
           aria-label={`${model.title} by ${model.creatorName}`}
         >
@@ -58,7 +58,7 @@ function ModelCard({ model }: ModelCardProps) {
               <motion.img
                 src={model.thumbnailUrl || fallbackThumbnail}
                 alt={`3D model preview of ${model.title}`}
-                className={`object-cover w-full h-full rounded-t-lg transform group-hover:scale-105 transition-transform duration-300 ${
+                className={`object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300 ${
                   isLoading ? 'opacity-0' : 'opacity-100'
                 }`}
                 loading="lazy"
@@ -76,9 +76,9 @@ function ModelCard({ model }: ModelCardProps) {
                   role="alert"
                   aria-label="Failed to load image"
                 >
-                  <div className="text-center p-4">
+                  <div className="text-center p-6">
                     <svg
-                      className="w-10 h-10 mx-auto text-muted-foreground mb-2"
+                      className="w-12 h-12 mx-auto text-muted-foreground mb-3"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -98,7 +98,7 @@ function ModelCard({ model }: ModelCardProps) {
 
               {model.directPrintEnabled && (
                 <Badge 
-                  className="absolute top-2 right-2 z-20 shadow-lg"
+                  className="absolute top-3 right-3 z-20 shadow-lg"
                   role="status"
                   aria-label="Direct print available"
                 >
@@ -107,14 +107,14 @@ function ModelCard({ model }: ModelCardProps) {
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col items-start gap-2 p-4 group-hover:bg-muted/50 transition-colors">
-            <h3 className="font-semibold line-clamp-1" title={model.title}>
+          <CardFooter className="flex flex-col items-start gap-2 p-6 group-hover:bg-muted/50 transition-colors">
+            <h3 className="font-semibold text-lg line-clamp-1" title={model.title}>
               {model.title}
             </h3>
             <p className="text-sm text-muted-foreground">
               by {model.creatorName}
             </p>
-            <p className="font-medium">
+            <p className="font-medium text-base">
               <span className="sr-only">Price:</span>
               ${(model.price / 100).toFixed(2)}
             </p>

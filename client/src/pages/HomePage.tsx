@@ -21,7 +21,7 @@ function HomePage() {
   const { models, isLoading } = useModels();
 
   return (
-    <div className="space-y-20">
+    <div className="space-y-16">
       {/* Hero Section */}
       <section className="relative -mt-16 min-h-[600px] w-full overflow-hidden bg-gradient-to-b from-background to-primary/5">
         <div 
@@ -31,7 +31,7 @@ function HomePage() {
             backgroundSize: "30px 30px",
           }}
         />
-        <div className="container relative h-full flex items-center">
+        <div className="container px-4 sm:px-6 lg:px-8 relative h-full flex items-center">
           <div className="max-w-2xl space-y-6">
             <motion.h1 
               className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
@@ -68,8 +68,8 @@ function HomePage() {
 
       {/* Stats Bar */}
       <section className="border-y bg-card/50 backdrop-blur-sm">
-        <div className="container py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="container px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { icon: Box, label: "Total Models", value: "10,000+" },
               { icon: Users, label: "Creators", value: "1,000+" },
@@ -95,7 +95,7 @@ function HomePage() {
       </section>
 
       {/* Categories */}
-      <section className="container">
+      <section className="container px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold tracking-tight mb-8">Browse Categories</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
@@ -122,9 +122,9 @@ function HomePage() {
       </section>
 
       {/* Top Collections */}
-      <section className="container">
+      <section className="container px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold tracking-tight mb-8">Top Collections</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {isLoading
             ? Array.from({ length: 4 }).map((_, i) => (
                 <ModelCardSkeleton key={i} />
@@ -147,7 +147,7 @@ function HomePage() {
       </section>
 
       {/* Notable Drops */}
-      <section className="container">
+      <section className="container px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold tracking-tight mb-8">Notable Drops</h2>
         <ScrollArea className="w-full">
           <div className="flex space-x-6 pb-6">
@@ -174,9 +174,9 @@ function HomePage() {
       </section>
 
       {/* Activity Feed */}
-      <section className="container pb-20">
+      <section className="container px-4 sm:px-6 lg:px-8 pb-16">
         <h2 className="text-3xl font-bold tracking-tight mb-8">Recent Activity</h2>
-        <div className="space-y-4">
+        <div className="space-y-4 max-w-5xl mx-auto">
           {isLoading
             ? Array.from({ length: 5 }).map((_, i) => (
                 <Card key={i} className="border-2">

@@ -28,49 +28,51 @@ function CategoriesPage() {
     : models;
 
   return (
-    <div className="container py-8 space-y-8">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <a href="/">
-            <ChevronLeft className="h-4 w-4" />
-          </a>
-        </Button>
-        <h1 className="text-3xl font-bold">Browse Models</h1>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {categories.map(({ icon: Icon, name, slug }) => (
-          <Button
-            key={slug}
-            variant={category === slug ? "default" : "outline"}
-            className="h-auto py-8 flex flex-col gap-4"
-            asChild
-          >
-            <a href={`/categories?category=${slug}`}>
-              <Icon className="h-8 w-8" />
-              <span>{name}</span>
+    <div className="min-h-screen bg-background">
+      <div className="container px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <a href="/">
+              <ChevronLeft className="h-4 w-4" />
             </a>
           </Button>
-        ))}
-      </div>
+          <h1 className="text-3xl font-bold tracking-tight">Browse Models</h1>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {isLoading ? (
-          Array.from({ length: 8 }).map((_, i) => (
-            <ModelCardSkeleton key={i} />
-          ))
-        ) : filteredModels?.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <p className="text-lg text-muted-foreground">No models found</p>
-            <Button className="mt-4" asChild>
-              <a href="/categories">Browse All Models</a>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {categories.map(({ icon: Icon, name, slug }) => (
+            <Button
+              key={slug}
+              variant={category === slug ? "default" : "outline"}
+              className="h-auto py-8 flex flex-col gap-4"
+              asChild
+            >
+              <a href={`/categories?category=${slug}`}>
+                <Icon className="h-8 w-8" />
+                <span className="font-medium">{name}</span>
+              </a>
             </Button>
-          </div>
-        ) : (
-          filteredModels?.map((model) => (
-            <ModelCard key={model.id} model={model} />
-          ))
-        )}
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {isLoading ? (
+            Array.from({ length: 8 }).map((_, i) => (
+              <ModelCardSkeleton key={i} />
+            ))
+          ) : filteredModels?.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-lg text-muted-foreground">No models found</p>
+              <Button className="mt-6" asChild>
+                <a href="/categories">Browse All Models</a>
+              </Button>
+            </div>
+          ) : (
+            filteredModels?.map((model) => (
+              <ModelCard key={model.id} model={model} />
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
