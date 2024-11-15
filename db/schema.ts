@@ -8,8 +8,8 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   role: text("role").default("user").notNull(),
   isAdmin: boolean("is_admin").default(false).notNull(),
-  created_at: timestamp("created_at").defaultNow(),
-  lastLogin: timestamp("last_login"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  last_login: timestamp("last_login"),
 });
 
 export const models = pgTable("models", {
@@ -23,7 +23,7 @@ export const models = pgTable("models", {
   category: text("category").notNull(),
   status: text("status").default("pending").notNull(), // pending, approved, rejected
   directPrintEnabled: boolean("direct_print_enabled").default(false),
-  created_at: timestamp("created_at").defaultNow(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at"),
   reviewedBy: integer("reviewed_by").references(() => users.id),
   reviewNote: text("review_note"),
@@ -34,7 +34,7 @@ export const categories = pgTable("categories", {
   name: text("name").unique().notNull(),
   slug: text("slug").unique().notNull(),
   description: text("description"),
-  created_at: timestamp("created_at").defaultNow(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at"),
 });
 
@@ -44,7 +44,7 @@ export const analytics = pgTable("analytics", {
   modelId: integer("model_id").references(() => models.id),
   userId: integer("user_id").references(() => users.id),
   metadata: jsonb("metadata"),
-  created_at: timestamp("created_at").defaultNow(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users);
