@@ -16,6 +16,7 @@ const ModelPage = lazy(() => import("@/pages/ModelPage"));
 const SearchPage = lazy(() => import("@/pages/SearchPage"));
 const CategoriesPage = lazy(() => import("@/pages/CategoriesPage"));
 const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
+const CreatePage = lazy(() => import("@/pages/CreatePage"));
 
 // Optimized loading fallback
 const PageLoader = () => (
@@ -64,6 +65,7 @@ function App() {
                 <Route path="/search" component={SearchPage} />
                 <Route path="/categories" component={CategoriesPage} />
                 <Route path="/profile" component={ProfilePage} />
+                <Route path="/create" component={CreatePage} />
                 <Route component={ErrorPage} />
               </Switch>
             </Suspense>

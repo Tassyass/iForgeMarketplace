@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Menu, X } from "lucide-react";
+import { Search, Menu, X, Plus } from "lucide-react";
 import { memo, useState, Suspense, useCallback } from "react";
 
 // Skip link component
@@ -120,6 +120,15 @@ function Layout({ children }: { children: React.ReactNode }) {
               <Link href="/categories">
                 <Button variant="ghost">Browse</Button>
               </Link>
+
+              {user && (
+                <Button variant="outline" size="icon" asChild>
+                  <Link href="/create">
+                    <Plus className="h-4 w-4" />
+                    <span className="sr-only">Create Model</span>
+                  </Link>
+                </Button>
+              )}
               
               <Suspense fallback={<UserLoadingFallback />}>
                 {isLoading ? (
