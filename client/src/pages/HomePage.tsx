@@ -30,8 +30,8 @@ function HomePage() {
             backgroundSize: "30px 30px",
           }}
         />
-        <div className="container relative h-full flex items-center px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl space-y-8">
+        <div className="container relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl mx-auto text-center space-y-8">
             <motion.h1 
               className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
               initial={{ opacity: 0, y: 20 }}
@@ -49,6 +49,7 @@ function HomePage() {
               The world's first marketplace for direct 3D printing from talented creators
             </motion.p>
             <motion.div
+              className="flex justify-center"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
