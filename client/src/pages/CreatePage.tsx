@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@/hooks/use-user";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -40,8 +40,13 @@ function CreatePage() {
     thumbnail: null as File | null,
   });
 
+  useEffect(() => {
+    if (!user) {
+      setLocation("/login");
+    }
+  }, [user, setLocation]);
+
   if (!user) {
-    setLocation("/login");
     return null;
   }
 
