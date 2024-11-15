@@ -22,7 +22,7 @@ function HomePage() {
   return (
     <div className="space-y-16 pb-16">
       {/* Hero Section */}
-      <section className="relative -mt-16 min-h-[600px] w-full overflow-hidden bg-gradient-to-b from-background to-primary/5">
+      <section className="relative pt-16 min-h-[600px] w-full overflow-hidden bg-gradient-to-b from-background to-primary/5">
         <div 
           className="absolute inset-0 opacity-50"
           style={{
