@@ -17,28 +17,44 @@ function validateModel(data: any, cacheKey?: string): ValidationResult<Model> {
     return { isValid: false, errors: ['Model data is missing'] };
   }
 
-  // Required fields validation
-  const requiredFields = ['id', 'title', 'description', 'price', 'creatorId', 'creatorName', 'category'];
-  requiredFields.forEach(field => {
+  // Required fields validation with specific error messages
+  const requiredFields = [
+    { field: 'id', type: 'number' },
+    { field: 'title', type: 'string' },
+    { field: 'description', type: 'string' },
+    { field: 'price', type: 'number' },
+    { field: 'creatorId', type: 'number' },
+    { field: 'creatorName', type: 'string' },
+    { field: 'category', type: 'string' }
+  ];
+
+  requiredFields.forEach(({ field, type }) => {
     if (data[field] === undefined || data[field] === null) {
       errors.push(`Missing required field: ${field}`);
+    } else if (typeof data[field] !== type) {
+      errors.push(`Invalid ${field} type: expected ${type}`);
     }
   });
 
-  // Type validations with improved error messages
-  if (typeof data.id !== 'number') errors.push('Invalid id type: expected number');
-  if (typeof data.title !== 'string') errors.push('Invalid title type: expected string');
-  if (typeof data.description !== 'string') errors.push('Invalid description type: expected string');
-  if (typeof data.price !== 'number' || data.price < 0) errors.push('Invalid price: must be a positive number');
-  if (typeof data.directPrintEnabled !== 'boolean') errors.push('Invalid directPrintEnabled type: expected boolean');
+  // Additional validations
+  if (data.price !== undefined && (data.price < 0 || !Number.isFinite(data.price))) {
+    errors.push('Invalid price: must be a positive number');
+  }
+
+  if (typeof data.directPrintEnabled !== 'boolean') {
+    errors.push('Invalid directPrintEnabled type: expected boolean');
+  }
 
   // URL validations with better error handling
-  try {
-    if (data.thumbnailUrl) new URL(data.thumbnailUrl);
-    if (data.modelUrl) new URL(data.modelUrl);
-  } catch {
-    errors.push('Invalid URL format for thumbnailUrl or modelUrl');
-  }
+  ['thumbnailUrl', 'modelUrl'].forEach(field => {
+    if (data[field]) {
+      try {
+        new URL(data[field]);
+      } catch {
+        errors.push(`Invalid URL format for ${field}`);
+      }
+    }
+  });
 
   const result = {
     isValid: errors.length === 0,
@@ -83,18 +99,26 @@ export function useModels(category?: string) {
     {
       fallbackData: placeholderModels,
       revalidateOnMount: true,
-      revalidateIfStale: false,
-      dedupingInterval: 5000, // Dedupe requests within 5 seconds
+      revalidateIfStale: true,
+      dedupingInterval: 10000, // 10 seconds
+      errorRetryCount: 3,
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
-        // Only retry up to 3 times and not on 404s
-        if (retryCount >= 3 || error.status === 404) return;
+        // Don't retry on 404s or server errors
+        if (error.status === 404 || error.status >= 500) return;
+        
+        // Only retry up to 3 times
+        if (retryCount >= 3) return;
+        
         // Exponential backoff
         setTimeout(() => revalidate({ retryCount }), Math.min(1000 * 2 ** retryCount, 30000));
       },
     }
   );
 
-  const validationResult = data ? validateModelArray(data) : { isValid: true, data: placeholderModels };
+  // Validate data and handle errors gracefully
+  const validationResult = data 
+    ? validateModelArray(data)
+    : { isValid: true, data: placeholderModels };
   
   // Filter models by category if provided
   const filteredModels = category && validationResult.data
@@ -108,6 +132,7 @@ export function useModels(category?: string) {
     isLoading,
     isError: error || !validationResult.isValid,
     validationErrors: validationResult.errors,
+    error: error ? error.message : validationResult.errors?.join(', '),
     mutate
   };
 }

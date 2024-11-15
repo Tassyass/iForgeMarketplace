@@ -65,55 +65,68 @@ const ErrorFallback = ({ error, resetErrorBoundary }: { error: Error; resetError
   </div>
 );
 
-const App = () => {
-  return (
-    <StrictMode>
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <SWRConfig 
-          value={{ 
-            fetcher,
-            revalidateOnFocus: false,
-            revalidateOnReconnect: false,
-            shouldRetryOnError: (err: any) => {
-              if (err.status === 401) return false;
-              return true;
-            },
-            onError: (error: any) => {
-              if (error.status !== 401) {
-                console.error('SWR Error:', error);
-              }
-            }
-          }}
-        >
-          <Layout>
-            <Suspense fallback={<PageLoader />}>
-              <Switch>
-                <Route path="/" component={HomePage} />
-                <Route path="/model/:id" component={ModelPage} />
-                <Route path="/search" component={SearchPage} />
-                <Route path="/categories" component={CategoriesPage} />
-                <Route path="/profile" component={ProfilePage} />
-                <Route path="/create" component={CreatePage} />
-                <Route path="/login" component={LoginPage} />
-                <Route component={ErrorPage} />
-              </Switch>
-            </Suspense>
-          </Layout>
-          <Toaster />
-        </SWRConfig>
-      </ErrorBoundary>
-    </StrictMode>
-  );
+// Enhanced SWR configuration
+const swrConfig = {
+  fetcher,
+  revalidateOnFocus: false,
+  revalidateOnReconnect: false,
+  shouldRetryOnError: (err: any) => {
+    // Don't retry on auth errors or server errors
+    if (err.status === 401 || err.status >= 500) return false;
+    return true;
+  },
+  onError: (error: any) => {
+    if (error.status !== 401) {
+      console.error('API Error:', error.message || 'An unexpected error occurred');
+    }
+  },
+  dedupingInterval: 5000,
+  errorRetryCount: 3,
+  errorRetryInterval: 5000,
 };
 
-// Create root only once
+const App = () => (
+  <StrictMode>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <SWRConfig value={swrConfig}>
+        <Layout>
+          <Suspense fallback={<PageLoader />}>
+            <Switch>
+              <Route path="/" component={HomePage} />
+              <Route path="/model/:id" component={ModelPage} />
+              <Route path="/search" component={SearchPage} />
+              <Route path="/categories" component={CategoriesPage} />
+              <Route path="/profile" component={ProfilePage} />
+              <Route path="/create" component={CreatePage} />
+              <Route path="/login" component={LoginPage} />
+              <Route component={ErrorPage} />
+            </Switch>
+          </Suspense>
+        </Layout>
+        <Toaster />
+      </SWRConfig>
+    </ErrorBoundary>
+  </StrictMode>
+);
+
+// Create root only once and store it in a variable outside of HMR scope
+let root: ReturnType<typeof createRoot> | null = null;
 const rootElement = document.getElementById("root");
-if (!rootElement) throw new Error("Root element not found");
 
-const root = createRoot(rootElement);
-root.render(<App />);
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
 
-// Enable HMR with type safety
+if (!root) {
+  root = createRoot(rootElement);
+  root.render(<App />);
+}
+
+// Safe HMR handling
 if (import.meta.hot) {
-  import.meta.hot.accept();
+  import.meta.hot.accept(() => {
+    if (root) {
+      root.render(<App />);
+    }
+  });
 }
