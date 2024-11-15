@@ -1,0 +1,63 @@
+Build the iForge Maker Store as an organized, functional, and scalable online marketplace inspired by OpenSea, with features for listing, buying, and directly printing 3D models through iForge’s on-demand manufacturing (OM) centers. Please prioritize clear file organization, modularity, and robust server configuration. Follow these key guidelines:
+
+1. File and Folder Structure
+Organize the project with a clear MVC (Model-View-Controller) or component-based structure to ensure maintainability.
+Use folders such as controllers, models, services, and routes for backend logic, and components, pages, and assets for frontend files.
+Keep configuration files (e.g., environment variables, database settings, and API keys) in a config directory, referencing sensitive data from .env for security.
+2. Server Configuration and Environment Setup
+Set up a robust server using a framework like Express (Node.js) or NestJS for organized routing and middleware.
+Configure environment variables securely for settings like SESSION_SECRET, database URLs, and payment provider APIs.
+Use CORS settings to control access and ensure secure requests between the frontend and backend.
+Ensure the server can handle static assets, user authentication, and real-time data updates.
+3. Core Marketplace Features
+Homepage Layout:
+
+Create an engaging homepage with a hero banner showcasing trending models and categories.
+Include sections for Browse by Category (e.g., Figurines, Prototypes) and Featured Models.
+Add a Top Creators section, spotlighting popular or high-selling creators.
+Model Listings and Filters:
+
+Implement a responsive, grid-based layout for model listings.
+Display essential model details on each card, such as thumbnail, title, price, creator’s name, and availability for Direct Print.
+Set up filters for category, price range, licensing, and Direct Print availability and sorting options like Newest, Most Popular, and Price (Low to High).
+Individual Model Page:
+
+Design a model detail page with an interactive 3D model viewer (using Three.js) that lets users pan, zoom, and rotate models.
+Include detailed model information such as description, file format, print specifications, and licensing.
+Provide options to purchase or print directly with iForge, showing licensing terms and pricing information.
+4. Direct Print with iForge OM Centers
+Allow users to sell their designs directly on the marketplace for other customers to buy and print directly through iForge’s on-demand manufacturing (OM) centers.
+Ensure that eligible models have a ‘Print with iForge’ option on their detail page, allowing customers to choose specifications (e.g., material, color, size) before ordering.
+Organize the Direct Print functionality into modular files, making it easy to update or extend.
+Include order tracking within the user dashboard, allowing customers to monitor their print order status.
+5. User Accounts and Dashboard
+User Profiles:
+Create public profiles for each user, showcasing uploaded models, purchase history, and favorites.
+User Dashboard:
+Develop a private dashboard where users can manage purchases, track Direct Print orders, and view account settings.
+Ensure the dashboard is easy to navigate and that key actions (viewing purchases, tracking orders) are prominent and functional.
+6. Upload and Seller Management
+Upload Form:
+Build a form for sellers to upload 3D models, set prices, select licensing terms, and enable Direct Print if desired.
+Seller Dashboard:
+Provide a seller dashboard where users can manage their listings, view sales statistics, and track earnings.
+Include notifications for new sales or print orders to keep sellers informed.
+7. Admin and Moderation Panel
+Create an admin dashboard for reviewing new uploads, managing user accounts, approving Direct Print eligibility, and handling user reports.
+Allow admins to moderate listings, handle flagged content, and oversee print orders.
+8. Local Payment Provider Integration
+Prepare the codebase for integration with a local payment provider, ensuring secure purchase flows.
+Make payment logic modular and adaptable for future updates or alternative payment integrations.
+9. Branding Integration
+Use the iForge logo (provided as ‘Logo iForge-8’) in key areas: navigation bar, footer, homepage, and dashboards.
+Apply iForge brand colors and typography to create a cohesive, professional look.
+Add the iForge logo as a favicon for browser tabs.
+10. Testing and Deployment Preparation
+Conduct rigorous testing on all core functionalities, including file upload, payment, and Direct Print order processing.
+Prepare for deployment by creating Docker configurations (if needed) and ensuring that all settings (database connections, environment variables) are correctly set for a production environment.
+Document the setup process for both development and production environments to make future maintenance easier.
+11. Modularity and Code Comments
+Write modular, well-commented code for easy readability and future updates.
+Include comments on key functions to describe their purpose and logic, making the codebase approachable for future developers.
+The goal is a stable, well-documented iForge Maker Store that enables users to sell and buy 3D designs, with Direct Print capabilities through iForge OM centers. Ensure that the project is organized, modular, and scalable for a successful marketplace launch."
+
