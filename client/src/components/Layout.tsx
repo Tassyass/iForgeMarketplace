@@ -16,25 +16,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search } from "lucide-react";
-import { memo } from "react";
+import { Search, Menu, X } from "lucide-react";
+import { memo, useState } from "react";
 
 // Skip link component
 const SkipLink = memo(() => (
-  <a
-    href="#main-content"
+  <div
     className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-white px-4 py-2 rounded focus:z-50"
     role="navigation"
     aria-label="Skip to main content"
+    tabIndex={0}
+    onClick={() => {
+      document.getElementById("main-content")?.focus();
+    }}
   >
     Skip to main content
-  </a>
+  </div>
 ));
 
 SkipLink.displayName = "SkipLink";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useUser();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -44,25 +49,37 @@ export function Layout({ children }: { children: React.ReactNode }) {
         role="banner"
       >
         <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          <Link href="/">
-            <a className="h-8 relative shrink-0" aria-label="iForge Home">
-              <img 
-                src="/Logo iForge-8.png" 
-                alt="iForge" 
-                className="h-8 w-auto object-contain" 
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.style.display = 'none';
-                  const textLogo = document.createElement('span');
-                  textLogo.textContent = 'iForge';
-                  textLogo.className = 'text-2xl font-bold text-primary';
-                  e.currentTarget.parentNode?.appendChild(textLogo);
-                }}
-              />
-            </a>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <div className="h-8 relative shrink-0 cursor-pointer" aria-label="iForge Home">
+                <img 
+                  src="/Logo iForge-8.png" 
+                  alt="iForge" 
+                  className="h-8 w-auto object-contain" 
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.style.display = 'none';
+                    const textLogo = document.createElement('span');
+                    textLogo.textContent = 'iForge';
+                    textLogo.className = 'text-2xl font-bold text-primary';
+                    e.currentTarget.parentNode?.appendChild(textLogo);
+                  }}
+                />
+              </div>
+            </Link>
 
-          <div className="flex-1 max-w-2xl flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            >
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
+
+          <div className={`${isSearchOpen ? 'flex' : 'hidden'} md:flex flex-1 max-w-2xl items-center gap-2`}>
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
               <Input 
@@ -73,7 +90,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               />
             </div>
             <Select defaultValue="all">
-              <SelectTrigger className="w-[180px]" aria-label="Select category">
+              <SelectTrigger className="w-[180px] hidden md:flex" aria-label="Select category">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -86,16 +103,33 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Select>
           </div>
 
-          <nav className="flex items-center gap-6" role="navigation" aria-label="Main navigation">
+          <div className="flex items-center gap-2 md:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              aria-label={isSearchOpen ? "Close search" : "Open search"}
+            >
+              {isSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+            </Button>
+          </div>
+
+          <nav 
+            className={`${
+              isMobileMenuOpen ? 'absolute left-0 right-0 top-16 border-b bg-background p-4' : 'hidden'
+            } md:flex md:static md:p-0 md:border-0 items-center gap-6`}
+            role="navigation" 
+            aria-label="Main navigation"
+          >
             <Link href="/models">
-              <a className="text-muted-foreground hover:text-foreground transition-colors duration-200" aria-label="Browse Models">
+              <div className="text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer">
                 Browse Models
-              </a>
+              </div>
             </Link>
             <Link href="/create">
-              <a className="text-muted-foreground hover:text-foreground transition-colors duration-200" aria-label="Create Model">
+              <div className="text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer">
                 Create
-              </a>
+              </div>
             </Link>
             {user ? (
               <DropdownMenu>
@@ -131,7 +165,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ) : (
               <Link href="/login">
                 <Button 
-                  className="transition-transform hover:scale-105 duration-200"
+                  className="transition-transform hover:scale-105 duration-200 w-full md:w-auto"
                   aria-label="Login"
                 >
                   Login
