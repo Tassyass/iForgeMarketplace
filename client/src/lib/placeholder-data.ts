@@ -6,14 +6,14 @@ const generatePlaceholderImage = (width: number, height: number, text: string) =
 export const placeholderModels: Model[] = [
   {
     id: 1,
-    title: "Geometric Desk Organizer",
-    description: "A modern desk organizer with geometric patterns perfect for any workspace. Features multiple compartments and a sleek design.",
+    title: "Gaming Console Controller Stand",
+    description: "A sleek and ergonomic stand for gaming controllers, featuring built-in cable management and charging dock compatibility.",
     price: 1499,
-    thumbnailUrl: generatePlaceholderImage(400, 400, "Desk Organizer"),
-    modelUrl: "/models/desk-organizer.glb",
+    thumbnailUrl: generatePlaceholderImage(400, 400, "Gaming+Controller+Stand"),
+    modelUrl: "/models/controller-stand.glb",
     creatorId: 1,
     creatorName: "DesignMaster",
-    category: "Utility",
+    category: "Gaming",
     directPrintEnabled: true,
     createdAt: new Date().toISOString(),
     status: "active",
@@ -24,35 +24,70 @@ export const placeholderModels: Model[] = [
   },
   {
     id: 2,
-    title: "Dragon Miniature",
-    description: "Highly detailed dragon miniature perfect for gaming and display. Features intricate scales and dynamic pose.",
-    price: 2499,
-    thumbnailUrl: generatePlaceholderImage(400, 400, "Dragon"),
-    modelUrl: "/models/dragon.glb",
+    title: "Mechanical Keyboard Case",
+    description: "Custom mechanical keyboard case with adjustable typing angle and sound dampening features.",
+    price: 3999,
+    thumbnailUrl: generatePlaceholderImage(400, 400, "Mechanical+Keyboard"),
+    modelUrl: "/models/keyboard-case.glb",
     creatorId: 2,
-    creatorName: "GameArtist",
-    category: "Gaming",
+    creatorName: "TechDesigner",
+    category: "Mechanical",
     directPrintEnabled: true,
     createdAt: new Date().toISOString(),
     status: "active",
     fileSize: 3145728, // 3MB
-    fileFormat: "glb",
     polygonCount: 45678,
+    fileFormat: "glb",
     lastModified: new Date().toISOString(),
   },
-  // Add more models with complete data...
+  {
+    id: 3,
+    title: "Abstract Sculpture - Waves",
+    description: "Modern abstract sculpture featuring fluid wave patterns, perfect for contemporary spaces.",
+    price: 4999,
+    thumbnailUrl: generatePlaceholderImage(400, 400, "Abstract+Waves"),
+    modelUrl: "/models/waves-sculpture.glb",
+    creatorId: 3,
+    creatorName: "ArtisticMind",
+    category: "Art",
+    directPrintEnabled: true,
+    createdAt: new Date().toISOString(),
+    status: "active",
+    fileSize: 4194304, // 4MB
+    polygonCount: 67890,
+    fileFormat: "glb",
+    lastModified: new Date().toISOString(),
+  },
+  {
+    id: 4,
+    title: "Utility Cable Organizer",
+    description: "Modular cable management system with snap-fit connections and labeling options.",
+    price: 799,
+    thumbnailUrl: generatePlaceholderImage(400, 400, "Cable+Organizer"),
+    modelUrl: "/models/cable-organizer.glb",
+    creatorId: 4,
+    creatorName: "UtilityPro",
+    category: "Utility",
+    directPrintEnabled: true,
+    createdAt: new Date().toISOString(),
+    status: "active",
+    fileSize: 1048576, // 1MB
+    polygonCount: 12345,
+    fileFormat: "glb",
+    lastModified: new Date().toISOString(),
+  }
 ];
 
 export const categories: { id: ModelCategory; name: string; count: number }[] = [
-  { id: "Gaming", name: "Gaming Models", count: 2500 },
-  { id: "Mechanical", name: "Mechanical Parts", count: 1800 },
-  { id: "Art", name: "Artistic Creations", count: 3200 },
-  { id: "Utility", name: "Utility Items", count: 1500 },
+  { id: "Gaming", name: "Gaming Models", count: 150 },
+  { id: "Mechanical", name: "Mechanical Parts", count: 200 },
+  { id: "Art", name: "Artistic Creations", count: 175 },
+  { id: "Utility", name: "Utility Items", count: 125 }
 ];
 
 export const collections = [
   { id: 1, name: "Popular This Week", count: 12 },
   { id: 2, name: "Editor's Choice", count: 8 },
   { id: 3, name: "New Arrivals", count: 24 },
-  { id: 4, name: "Best Sellers", count: 16 },
+  { id: 4, name: "Best Sellers", count: 16 }
 ];
