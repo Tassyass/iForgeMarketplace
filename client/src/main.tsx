@@ -41,6 +41,11 @@ const CreatePage = lazy(() =>
     default: () => <ErrorPage message="Failed to load Create page" />
   }))
 );
+const LoginPage = lazy(() => 
+  import("@/pages/LoginPage").catch(() => ({
+    default: () => <ErrorPage message="Failed to load Login page" />
+  }))
+);
 
 // Optimized loading fallback
 const PageLoader = () => (
@@ -89,6 +94,7 @@ const App = () => {
                 <Route path="/categories" component={CategoriesPage} />
                 <Route path="/profile" component={ProfilePage} />
                 <Route path="/create" component={CreatePage} />
+                <Route path="/login" component={LoginPage} />
                 <Route component={ErrorPage} />
               </Switch>
             </Suspense>

@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft } from "lucide-react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const categories = [
   { name: "Gaming", value: "gaming" },
@@ -23,8 +24,8 @@ const categories = [
   { name: "Utility", value: "utility" },
 ];
 
-function CreatePage() {
-  const { user } = useUser();
+function CreatePageContent() {
+  const { user, isLoading } = useUser();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
@@ -40,18 +41,34 @@ function CreatePage() {
     thumbnail: null as File | null,
   });
 
+  console.log("CreatePage: Component mounted", { user, isLoading });
+
   useEffect(() => {
-    if (!user) {
+    console.log("CreatePage: Auth state changed", { user, isLoading });
+    if (!isLoading && !user) {
+      console.log("CreatePage: Redirecting to login");
       setLocation("/login");
     }
-  }, [user, setLocation]);
+  }, [user, isLoading, setLocation]);
 
+  // Early return with loading state
+  if (isLoading) {
+    return (
+      <div className="container py-8 flex items-center justify-center min-h-[60vh]">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
   if (!user) {
+    console.log("CreatePage: User not authenticated, returning null");
     return null;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("CreatePage: Form submission started");
     
     // Validate form data
     if (!formData.title || !formData.description || !formData.price || !formData.category) {
@@ -74,6 +91,7 @@ function CreatePage() {
 
     try {
       setIsUploading(true);
+      console.log("CreatePage: Uploading files");
       const formPayload = new FormData();
       formPayload.append("title", formData.title);
       formPayload.append("description", formData.description);
@@ -98,6 +116,7 @@ function CreatePage() {
       });
       setLocation("/profile");
     } catch (error) {
+      console.error("CreatePage: Form submission error", error);
       toast({
         title: "Error",
         description: "Failed to create model. Please try again.",
@@ -114,13 +133,14 @@ function CreatePage() {
   ) => {
     const file = event.target.files?.[0];
     if (file) {
+      console.log(`CreatePage: File selected for ${type}`, { fileName: file.name });
       setFiles((prev) => ({ ...prev, [type]: file }));
     }
   };
 
   return (
-    <div className="container py-8 space-y-8">
-      <div className="flex items-center gap-4">
+    <div className="container mx-auto py-8 px-4 min-h-[calc(100vh-4rem)]">
+      <div className="flex items-center gap-4 mb-8">
         <Button variant="ghost" size="icon" asChild>
           <a href="/">
             <ChevronLeft className="h-4 w-4" />
@@ -129,7 +149,7 @@ function CreatePage() {
         <h1 className="text-3xl font-bold">Create New Model</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-2xl space-y-8">
+      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8 bg-card p-6 rounded-lg shadow-sm">
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
@@ -226,11 +246,23 @@ function CreatePage() {
           </div>
         </div>
 
-        <Button type="submit" disabled={isUploading}>
+        <Button 
+          type="submit" 
+          disabled={isUploading}
+          className="w-full"
+        >
           {isUploading ? "Creating..." : "Create Model"}
         </Button>
       </form>
     </div>
+  );
+}
+
+function CreatePage() {
+  return (
+    <ErrorBoundary>
+      <CreatePageContent />
+    </ErrorBoundary>
   );
 }
 
