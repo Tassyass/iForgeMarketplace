@@ -48,7 +48,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">{children}</main>
+      <main>{children}</main>
 
       <footer className="border-t mt-auto">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
