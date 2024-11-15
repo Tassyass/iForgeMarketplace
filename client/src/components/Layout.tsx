@@ -36,7 +36,7 @@ const SkipLink = memo(() => (
 
 SkipLink.displayName = "SkipLink";
 
-export function Layout({ children }: { children: React.ReactNode }) {
+function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -48,6 +48,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50"
         role="banner"
       >
+        {/* Header content */}
         <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link href="/">
@@ -190,3 +191,5 @@ export function Layout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+export default Layout;

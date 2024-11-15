@@ -8,7 +8,7 @@ interface ModelCardProps {
   model: Model;
 }
 
-export function ModelCard({ model }: ModelCardProps) {
+function ModelCard({ model }: ModelCardProps) {
   return (
     <Link href={`/model/${model.id}`}>
       <motion.div
@@ -54,3 +54,5 @@ export function ModelCard({ model }: ModelCardProps) {
     </Link>
   );
 }
+
+export default ModelCard;

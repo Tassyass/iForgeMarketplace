@@ -1,5 +1,5 @@
-import { ModelCard } from "@/components/ModelCard";
-import { ModelCardSkeleton } from "@/components/ModelCardSkeleton";
+import ModelCard from "@/components/ModelCard";
+import ModelCardSkeleton from "@/components/ModelCardSkeleton";
 import { useModels } from "@/hooks/use-models";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

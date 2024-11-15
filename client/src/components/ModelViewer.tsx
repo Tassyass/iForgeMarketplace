@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 interface ModelViewerProps {
   modelUrl: string;
 }
 
-export function ModelViewer({ modelUrl }: ModelViewerProps) {
+function ModelViewer({ modelUrl }: ModelViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export function ModelViewer({ modelUrl }: ModelViewerProps) {
     scene.add(directionalLight);
 
     // Load model
-    const loader = new THREE.GLTFLoader();
+    const loader = new GLTFLoader();
     loader.load(modelUrl, (gltf) => {
       scene.add(gltf.scene);
       
@@ -70,3 +71,5 @@ export function ModelViewer({ modelUrl }: ModelViewerProps) {
 
   return <div ref={containerRef} className="w-full aspect-square" />;
 }
+
+export default ModelViewer;

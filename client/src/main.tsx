@@ -4,7 +4,7 @@ import { Switch, Route } from "wouter";
 import "./index.css";
 import { SWRConfig } from "swr";
 import { fetcher } from "./lib/fetcher";
-import { Layout } from "@/components/Layout";
+import Layout from "@/components/Layout";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 

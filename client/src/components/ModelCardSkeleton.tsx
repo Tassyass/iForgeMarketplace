@@ -2,7 +2,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 
-export function ModelCardSkeleton() {
+function ModelCardSkeleton() {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -24,3 +24,5 @@ export function ModelCardSkeleton() {
     </motion.div>
   );
 }
+
+export default ModelCardSkeleton;
