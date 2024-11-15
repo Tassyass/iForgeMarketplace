@@ -46,11 +46,22 @@ function ModelPage() {
   const [isOrdering, setIsOrdering] = useState(false);
 
   if (error) {
-    return <div>Error loading model</div>;
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold text-destructive">Error loading model</h2>
+          <p className="text-muted-foreground">Please try again later</p>
+        </div>
+      </div>
+    );
   }
 
   if (!model) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   const handlePurchase = async () => {
@@ -128,153 +139,160 @@ function ModelPage() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div>
-        <ModelViewer modelUrl={model.modelUrl} />
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="rounded-lg overflow-hidden shadow-lg bg-card">
+          <ModelViewer modelUrl={model.modelUrl} />
+        </div>
 
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">{model.title}</CardTitle>
-            <CardDescription>by {model.creatorName}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-lg font-semibold">
-              ${(model.price / 100).toFixed(2)}
-            </p>
-            <p className="mt-4">{model.description}</p>
-            <div className="flex gap-2 mt-4">
-              <Badge>{model.category}</Badge>
+        <div className="space-y-6">
+          <Card className="border-2">
+            <CardHeader className="space-y-2">
+              <CardTitle className="text-3xl font-bold">{model.title}</CardTitle>
+              <CardDescription className="text-base">
+                by {model.creatorName}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-2xl font-bold text-primary">
+                ${(model.price / 100).toFixed(2)}
+              </p>
+              <p className="text-base leading-relaxed">{model.description}</p>
+              <div className="flex flex-wrap gap-3">
+                <Badge className="text-sm px-3 py-1">{model.category}</Badge>
+                {model.directPrintEnabled && (
+                  <Badge variant="secondary" className="text-sm px-3 py-1">
+                    Direct Print Available
+                  </Badge>
+                )}
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-4">
+              <Button
+                className="w-full h-12 text-lg font-semibold"
+                onClick={handlePurchase}
+                disabled={!user}
+              >
+                Purchase Model
+              </Button>
+
               {model.directPrintEnabled && (
-                <Badge variant="secondary">Direct Print Available</Badge>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button
-              className="w-full"
-              onClick={handlePurchase}
-              disabled={!user}
-            >
-              Purchase Model
-            </Button>
-
-            {model.directPrintEnabled && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full">
-                    Order Print
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Print Options</DialogTitle>
-                    <DialogDescription>
-                      Configure your print specifications
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label>Material</label>
-                      <Select
-                        value={printOptions.material}
-                        onValueChange={(value) =>
-                          setPrintOptions({ ...printOptions, material: value })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="PLA">PLA</SelectItem>
-                          <SelectItem value="ABS">ABS</SelectItem>
-                          <SelectItem value="PETG">PETG</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label>Color</label>
-                      <Select
-                        value={printOptions.color}
-                        onValueChange={(value) =>
-                          setPrintOptions({ ...printOptions, color: value })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="white">White</SelectItem>
-                          <SelectItem value="black">Black</SelectItem>
-                          <SelectItem value="gray">Gray</SelectItem>
-                          <SelectItem value="red">Red</SelectItem>
-                          <SelectItem value="blue">Blue</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label>Size (%)</label>
-                      <Select
-                        value={printOptions.size.toString()}
-                        onValueChange={(value) =>
-                          setPrintOptions({
-                            ...printOptions,
-                            size: parseInt(value),
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="50">50%</SelectItem>
-                          <SelectItem value="100">100%</SelectItem>
-                          <SelectItem value="150">150%</SelectItem>
-                          <SelectItem value="200">200%</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <DialogFooter>
-                    <Button
-                      onClick={handlePrint}
-                      disabled={isOrdering || !user}
-                    >
-                      {isOrdering ? "Processing..." : "Place Print Order"}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full h-12 text-lg font-semibold">
+                      Order Print
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            )}
-          </CardFooter>
-        </Card>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px] p-6">
+                    <DialogHeader className="space-y-3">
+                      <DialogTitle className="text-2xl">Print Options</DialogTitle>
+                      <DialogDescription className="text-base">
+                        Configure your print specifications
+                      </DialogDescription>
+                    </DialogHeader>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Print Specifications</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between">
-              <span>Recommended Material</span>
-              <span>PLA</span>
-            </div>
-            <Separator />
-            <div className="flex justify-between">
-              <span>Print Time (approx)</span>
-              <span>4-6 hours</span>
-            </div>
-            <Separator />
-            <div className="flex justify-between">
-              <span>Support Required</span>
-              <span>Minimal</span>
-            </div>
-          </CardContent>
-        </Card>
+                    <div className="space-y-6 py-4">
+                      <div className="space-y-3">
+                        <label className="text-sm font-medium">Material</label>
+                        <Select
+                          value={printOptions.material}
+                          onValueChange={(value) =>
+                            setPrintOptions({ ...printOptions, material: value })
+                          }
+                        >
+                          <SelectTrigger className="w-full h-11">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="PLA">PLA</SelectItem>
+                            <SelectItem value="ABS">ABS</SelectItem>
+                            <SelectItem value="PETG">PETG</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="text-sm font-medium">Color</label>
+                        <Select
+                          value={printOptions.color}
+                          onValueChange={(value) =>
+                            setPrintOptions({ ...printOptions, color: value })
+                          }
+                        >
+                          <SelectTrigger className="w-full h-11">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="white">White</SelectItem>
+                            <SelectItem value="black">Black</SelectItem>
+                            <SelectItem value="gray">Gray</SelectItem>
+                            <SelectItem value="red">Red</SelectItem>
+                            <SelectItem value="blue">Blue</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="text-sm font-medium">Size (%)</label>
+                        <Select
+                          value={printOptions.size.toString()}
+                          onValueChange={(value) =>
+                            setPrintOptions({
+                              ...printOptions,
+                              size: parseInt(value),
+                            })
+                          }
+                        >
+                          <SelectTrigger className="w-full h-11">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="50">50%</SelectItem>
+                            <SelectItem value="100">100%</SelectItem>
+                            <SelectItem value="150">150%</SelectItem>
+                            <SelectItem value="200">200%</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <DialogFooter>
+                      <Button
+                        className="w-full h-11 text-lg font-semibold"
+                        onClick={handlePrint}
+                        disabled={isOrdering || !user}
+                      >
+                        {isOrdering ? "Processing..." : "Place Print Order"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </CardFooter>
+          </Card>
+
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle className="text-xl">Print Specifications</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm font-medium">Recommended Material</span>
+                <span className="text-sm">PLA</span>
+              </div>
+              <Separator className="bg-border/50" />
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm font-medium">Print Time (approx)</span>
+                <span className="text-sm">4-6 hours</span>
+              </div>
+              <Separator className="bg-border/50" />
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm font-medium">Support Required</span>
+                <span className="text-sm">Minimal</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
