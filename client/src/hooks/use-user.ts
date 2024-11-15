@@ -1,30 +1,64 @@
 import useSWR from "swr";
-import type { User, InsertUser } from "db/schema";
+import type { User } from "db/schema";
+
+interface AuthError extends Error {
+  status?: number;
+}
 
 export function useUser() {
-  const { data, error, mutate } = useSWR<User, Error>("/api/user", {
+  const { data, error, mutate } = useSWR<User, AuthError>("/api/user", {
     revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    shouldRetryOnError: (err) => {
+      // Don't retry on 401 as it's an expected state
+      return err.status !== 401;
+    },
+    onError: (err) => {
+      // Clear user data on 401 errors
+      if (err.status === 401) {
+        mutate(undefined, false);
+      }
+    }
   });
 
   return {
     user: data,
     isLoading: !error && !data,
+    isError: error && error.status !== 401,
+    isAuthenticated: Boolean(data),
     error,
-    login: async (user: InsertUser) => {
-      const res = await handleRequest("/login", "POST", user);
-      mutate();
-      return res;
+    login: async (credentials: { email: string; password: string }) => {
+      try {
+        const response = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(credentials),
+          credentials: "include"
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message);
+        }
+
+        await mutate();
+        return { ok: true };
+      } catch (e: any) {
+        return { ok: false, message: e.message };
+      }
     },
     logout: async () => {
-      const res = await handleRequest("/logout", "POST");
-      mutate(undefined);
-      return res;
-    },
-    register: async (user: InsertUser) => {
-      const res = await handleRequest("/register", "POST", user);
-      mutate();
-      return res;
-    },
+      try {
+        await fetch("/api/logout", {
+          method: "POST",
+          credentials: "include"
+        });
+        await mutate(undefined, false);
+        return { ok: true };
+      } catch (e: any) {
+        return { ok: false, message: e.message };
+      }
+    }
   };
 }
 
@@ -40,7 +74,7 @@ type RequestResult =
 async function handleRequest(
   url: string,
   method: string,
-  body?: InsertUser
+  body?: { email: string; password: string }
 ): Promise<RequestResult> {
   try {
     const response = await fetch(url, {
@@ -52,11 +86,16 @@ async function handleRequest(
 
     if (!response.ok) {
       const errorData = await response.json();
-      return { ok: false, message: errorData.message };
+      const error: AuthError = new Error(errorData.message);
+      error.status = response.status;
+      throw error;
     }
 
     return { ok: true };
   } catch (e: any) {
-    return { ok: false, message: e.toString() };
+    return { 
+      ok: false, 
+      message: e.message || 'An error occurred'
+    };
   }
 }

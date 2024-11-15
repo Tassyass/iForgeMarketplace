@@ -1,7 +1,7 @@
 import { useModels } from "@/hooks/use-models";
 import ModelCard from "@/components/ModelCard";
 import ModelCardSkeleton from "@/components/ModelCardSkeleton";
-import { useSearchParams } from "wouter";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { 
   Gamepad, 
@@ -19,8 +19,8 @@ const categories = [
 ];
 
 function CategoriesPage() {
-  const [searchParams] = useSearchParams();
-  const category = searchParams.get("category");
+  const [location] = useLocation();
+  const category = new URLSearchParams(location.split("?")[1]).get("category");
   const { models, isLoading } = useModels();
 
   const filteredModels = category
@@ -55,13 +55,22 @@ function CategoriesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {isLoading
-          ? Array.from({ length: 8 }).map((_, i) => (
-              <ModelCardSkeleton key={i} />
-            ))
-          : filteredModels?.map((model) => (
-              <ModelCard key={model.id} model={model} />
-            ))}
+        {isLoading ? (
+          Array.from({ length: 8 }).map((_, i) => (
+            <ModelCardSkeleton key={i} />
+          ))
+        ) : filteredModels?.length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <p className="text-lg text-muted-foreground">No models found</p>
+            <Button className="mt-4" asChild>
+              <a href="/categories">Browse All Models</a>
+            </Button>
+          </div>
+        ) : (
+          filteredModels?.map((model) => (
+            <ModelCard key={model.id} model={model} />
+          ))
+        )}
       </div>
     </div>
   );

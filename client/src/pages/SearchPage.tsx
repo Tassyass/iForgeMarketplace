@@ -7,35 +7,51 @@ import { Button } from "@/components/ui/button";
 import { Search, ChevronLeft } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { debounce } from "lodash-es";
+import { useInView } from "react-intersection-observer";
 
 function SearchPage() {
   const [location, setLocation] = useLocation();
-  const searchParams = new URLSearchParams(location.split("?")[1]);
-  const query = searchParams.get("q") || "";
-  const [searchTerm, setSearchTerm] = useState(query);
+  const searchParams = new URLSearchParams(location.split("?")[1] || "");
+  const initialQuery = searchParams.get("q") || "";
+  const [searchTerm, setSearchTerm] = useState(initialQuery);
   const { models, isLoading } = useModels();
+  const [displayCount, setDisplayCount] = useState(12);
+  const { ref: loadMoreRef, inView } = useInView();
 
   const debouncedSearch = useCallback(
     debounce((term: string) => {
-      setLocation(`/search?q=${encodeURIComponent(term)}`);
+      const newParams = new URLSearchParams();
+      if (term) newParams.set("q", term);
+      setLocation(`/search${term ? `?${newParams.toString()}` : ""}`);
     }, 300),
-    []
+    [setLocation]
   );
 
   useEffect(() => {
-    if (searchTerm) {
+    if (searchTerm !== initialQuery) {
       debouncedSearch(searchTerm);
     }
-  }, [searchTerm, debouncedSearch]);
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [searchTerm, initialQuery, debouncedSearch]);
 
-  const filteredModels = query
+  useEffect(() => {
+    if (inView) {
+      setDisplayCount((prev) => prev + 12);
+    }
+  }, [inView]);
+
+  const filteredModels = searchTerm
     ? models?.filter(
         (model) =>
-          model.title.toLowerCase().includes(query.toLowerCase()) ||
-          model.description.toLowerCase().includes(query.toLowerCase()) ||
-          model.category.toLowerCase().includes(query.toLowerCase())
+          model.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          model.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          model.category.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : models;
+
+  const displayedModels = filteredModels?.slice(0, displayCount);
 
   return (
     <div className="container py-8 space-y-8">
@@ -65,9 +81,21 @@ function SearchPage() {
         ) : filteredModels?.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <p className="text-lg text-muted-foreground">No models found</p>
+            <Button className="mt-4" asChild>
+              <a href="/categories">Browse All Models</a>
+            </Button>
           </div>
         ) : (
-          filteredModels?.map((model) => <ModelCard key={model.id} model={model} />)
+          <>
+            {displayedModels?.map((model) => (
+              <ModelCard key={model.id} model={model} />
+            ))}
+            {displayedModels?.length < (filteredModels?.length || 0) && (
+              <div ref={loadMoreRef} className="col-span-full h-20 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
