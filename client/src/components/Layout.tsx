@@ -199,62 +199,81 @@ function Layout({ children }: { children: React.ReactNode }) {
       </main>
 
       <footer className="border-t bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Company Info */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">About iForge</h3>
-              <p className="text-sm text-muted-foreground">
+        <div className="container mx-auto px-4 py-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="col-span-2 md:col-span-1">
+              <Link href="/">
+                <div className="h-8 relative mb-4">
+                  <img 
+                    src="/Logo iForge-8.png" 
+                    alt="iForge" 
+                    className="h-full w-auto object-contain"
+                  />
+                </div>
+              </Link>
+              <p className="text-sm text-muted-foreground mb-4">
                 The world's first marketplace for direct 3D printing from talented creators.
               </p>
               <div className="flex space-x-4">
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
-                  <Twitter className="h-5 w-5" />
-                  <span className="sr-only">Twitter</span>
-                </a>
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
-                  <Facebook className="h-5 w-5" />
-                  <span className="sr-only">Facebook</span>
-                </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
-                  <Instagram className="h-5 w-5" />
-                  <span className="sr-only">Instagram</span>
-                </a>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
-                  <Github className="h-5 w-5" />
-                  <span className="sr-only">Github</span>
-                </a>
+                {[
+                  { icon: Twitter, href: "https://twitter.com" },
+                  { icon: Facebook, href: "https://facebook.com" },
+                  { icon: Instagram, href: "https://instagram.com" },
+                  { icon: Github, href: "https://github.com" }
+                ].map(({ icon: Icon, href }) => (
+                  <a 
+                    key={href}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="sr-only">{href.split('.com')[0].split('//')[1]}</span>
+                  </a>
+                ))}
               </div>
             </div>
 
-            {/* Categories */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Categories</h3>
-              <ul className="space-y-2">
-                <li><Link href="/categories?category=gaming" className="text-sm text-muted-foreground hover:text-primary">Gaming</Link></li>
-                <li><Link href="/categories?category=mechanical" className="text-sm text-muted-foreground hover:text-primary">Mechanical</Link></li>
-                <li><Link href="/categories?category=art" className="text-sm text-muted-foreground hover:text-primary">Art</Link></li>
-                <li><Link href="/categories?category=utility" className="text-sm text-muted-foreground hover:text-primary">Utility</Link></li>
+            <div>
+              <h3 className="font-semibold mb-3">Categories</h3>
+              <ul className="space-y-2 text-sm">
+                {["Gaming", "Mechanical", "Art", "Utility"].map((category) => (
+                  <li key={category}>
+                    <Link 
+                      href={`/categories?category=${category.toLowerCase()}`}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {category}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            {/* Quick Links */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Quick Links</h3>
-              <ul className="space-y-2">
-                <li><Link href="/about" className="text-sm text-muted-foreground hover:text-primary">About Us</Link></li>
-                <li><Link href="/contact" className="text-sm text-muted-foreground hover:text-primary">Contact</Link></li>
-                <li><Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="text-sm text-muted-foreground hover:text-primary">Terms of Service</Link></li>
+            <div>
+              <h3 className="font-semibold mb-3">Quick Links</h3>
+              <ul className="space-y-2 text-sm">
+                {[
+                  { text: "About Us", href: "/about" },
+                  { text: "Contact", href: "/contact" },
+                  { text: "Privacy Policy", href: "/privacy" },
+                  { text: "Terms of Service", href: "/terms" }
+                ].map(({ text, href }) => (
+                  <li key={href}>
+                    <Link 
+                      href={href}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {text}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            {/* Newsletter */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Stay Updated</h3>
-              <p className="text-sm text-muted-foreground">
-                Subscribe to our newsletter for the latest updates and exclusive offers.
-              </p>
+            <div>
+              <h3 className="font-semibold mb-3">Newsletter</h3>
               <form onSubmit={handleNewsletterSubmit} className="space-y-2">
                 <div className="flex gap-2">
                   <Input
@@ -263,32 +282,26 @@ function Layout({ children }: { children: React.ReactNode }) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="flex-1"
+                    className="h-9"
                   />
-                  <Button type="submit" size="icon">
+                  <Button type="submit" size="icon" className="h-9 w-9">
                     <ArrowRight className="h-4 w-4" />
-                    <span className="sr-only">Subscribe to newsletter</span>
                   </Button>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Subscribe to receive updates
+                </p>
               </form>
-              <p className="text-xs text-muted-foreground">
-                By subscribing, you agree to our Privacy Policy and consent to receive updates from our company.
-              </p>
             </div>
           </div>
 
-          {/* Bottom Footer */}
-          <div className="mt-12 pt-8 border-t">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-sm text-muted-foreground">
-                © {new Date().getFullYear()} iForge. All rights reserved.
-              </p>
-              <div className="flex items-center gap-4">
-                <a href="mailto:support@iforge.com" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  support@iforge.com
-                </a>
-              </div>
+          <div className="mt-6 pt-6 border-t">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+              <p>© {new Date().getFullYear()} iForge. All rights reserved.</p>
+              <a href="mailto:support@iforge.com" className="flex items-center gap-2 hover:text-primary transition-colors">
+                <Mail className="h-4 w-4" />
+                support@iforge.com
+              </a>
             </div>
           </div>
         </div>

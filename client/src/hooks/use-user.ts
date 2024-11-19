@@ -1,5 +1,7 @@
 import useSWR from "swr";
 import type { User } from "db/schema";
+import { db } from "db";
+import { eq } from "drizzle-orm";
 
 interface AuthError extends Error {
   status?: number;
@@ -18,7 +20,7 @@ export function useUser() {
       if (err.status === 401) {
         mutate(undefined, false);
       }
-    }
+    },
   });
 
   return {
@@ -33,7 +35,7 @@ export function useUser() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(credentials),
-          credentials: "include"
+          credentials: "include",
         });
 
         if (!response.ok) {
@@ -51,14 +53,39 @@ export function useUser() {
       try {
         await fetch("/api/logout", {
           method: "POST",
-          credentials: "include"
+          credentials: "include",
         });
         await mutate(undefined, false);
         return { ok: true };
       } catch (e: any) {
         return { ok: false, message: e.message };
       }
-    }
+    },
+    register: async (credentials: {
+      fullName: string;
+      email: string;
+      password: string;
+    }) => {
+      // Update the type here to include fullName
+      try {
+        const response = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(credentials),
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message);
+        }
+
+        await mutate();
+        return { ok: true };
+      } catch (e: any) {
+        return { ok: false, message: e.message };
+      }
+    },
   };
 }
 
@@ -74,7 +101,7 @@ type RequestResult =
 async function handleRequest(
   url: string,
   method: string,
-  body?: { email: string; password: string }
+  body?: { email: string; password: string },
 ): Promise<RequestResult> {
   try {
     const response = await fetch(url, {
@@ -93,9 +120,9 @@ async function handleRequest(
 
     return { ok: true };
   } catch (e: any) {
-    return { 
-      ok: false, 
-      message: e.message || 'An error occurred'
+    return {
+      ok: false,
+      message: e.message || "An error occurred",
     };
   }
 }

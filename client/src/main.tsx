@@ -9,11 +9,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Button } from "@/components/ui/button";
 import { ErrorPage } from "@/pages/ErrorPage";
+import RegisterPage from "@/pages/RegisterPage"; // Import the RegisterPage component
 
 // Development logging utility
 const logDev = (...args: unknown[]): void => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[iForge]', ...args);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[iForge]", ...args);
   }
 };
 
@@ -27,21 +28,47 @@ const lazyLoadPage = (importFn: () => Promise<any>, pageName: string) =>
       logDev(`Failed to load ${pageName}:`, error);
       return {
         default: () => (
-          <ErrorPage message={`Failed to load ${pageName}. Please try again.`} />
-        )
+          <ErrorPage
+            message={`Failed to load ${pageName}. Please try again.`}
+          />
+        ),
       };
     }
   });
 
 // Lazy loaded pages with consistent exports
-export const HomePage = lazyLoadPage(() => import("@/pages/HomePage"), "HomePage");
-export const ModelPage = lazyLoadPage(() => import("@/pages/ModelPage"), "ModelPage");
-export const SearchPage = lazyLoadPage(() => import("@/pages/SearchPage"), "SearchPage");
-export const CategoriesPage = lazyLoadPage(() => import("@/pages/CategoriesPage"), "CategoriesPage");
-export const ProfilePage = lazyLoadPage(() => import("@/pages/ProfilePage"), "ProfilePage");
-export const CreatePage = lazyLoadPage(() => import("@/pages/CreatePage"), "CreatePage");
-export const LoginPage = lazyLoadPage(() => import("@/pages/LoginPage"), "LoginPage");
-export const AdminPage = lazyLoadPage(() => import("@/pages/AdminPage"), "AdminPage");
+export const HomePage = lazyLoadPage(
+  () => import("@/pages/HomePage"),
+  "HomePage",
+);
+export const ModelPage = lazyLoadPage(
+  () => import("@/pages/ModelPage"),
+  "ModelPage",
+);
+export const SearchPage = lazyLoadPage(
+  () => import("@/pages/SearchPage"),
+  "SearchPage",
+);
+export const CategoriesPage = lazyLoadPage(
+  () => import("@/pages/CategoriesPage"),
+  "CategoriesPage",
+);
+export const ProfilePage = lazyLoadPage(
+  () => import("@/pages/ProfilePage"),
+  "ProfilePage",
+);
+export const CreatePage = lazyLoadPage(
+  () => import("@/pages/CreatePage"),
+  "CreatePage",
+);
+export const LoginPage = lazyLoadPage(
+  () => import("@/pages/LoginPage"),
+  "LoginPage",
+);
+export const AdminPage = lazyLoadPage(
+  () => import("@/pages/AdminPage"),
+  "AdminPage",
+);
 
 // Loading component with proper error boundary
 export const PageLoader = () => (
@@ -51,13 +78,21 @@ export const PageLoader = () => (
 );
 
 // Enhanced error fallback with development details
-export function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+export function ErrorFallback({
+  error,
+  resetErrorBoundary,
+}: {
+  error: Error;
+  resetErrorBoundary: () => void;
+}) {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
       <div className="text-center space-y-4">
-        <h2 className="text-2xl font-bold text-destructive">Something went wrong</h2>
+        <h2 className="text-2xl font-bold text-destructive">
+          Something went wrong
+        </h2>
         <p className="text-muted-foreground">{error.message}</p>
-        {process.env.NODE_ENV === 'development' && (
+        {process.env.NODE_ENV === "development" && (
           <pre className="mt-2 text-sm text-muted-foreground overflow-auto max-w-md">
             {error.stack}
           </pre>
@@ -74,17 +109,17 @@ const swrConfig = {
   revalidateOnFocus: false,
   revalidateOnReconnect: true,
   shouldRetryOnError: (err: unknown) => {
-    if (err && typeof err === 'object' && 'status' in err) {
+    if (err && typeof err === "object" && "status" in err) {
       const status = (err as { status: number }).status;
       if (status === 401 || status >= 500) return false;
     }
     return true;
   },
   onError: (error: unknown) => {
-    if (error && typeof error === 'object' && 'status' in error) {
+    if (error && typeof error === "object" && "status" in error) {
       const status = (error as { status: number }).status;
       if (status !== 401) {
-        console.error('[iForge] API Error:', error);
+        console.error("[iForge] API Error:", error);
       }
     }
   },
@@ -108,10 +143,10 @@ export function App() {
                 <Route path="/profile" component={ProfilePage} />
                 <Route path="/create" component={CreatePage} />
                 <Route path="/login" component={LoginPage} />
+                <Route path="/register" component={RegisterPage} />
+                {/* Added route for RegisterPage */}
                 <Route path="/admin" component={AdminPage} />
-                <Route>
-                  {() => <ErrorPage message="Page not found" />}
-                </Route>
+                <Route>{() => <ErrorPage message="Page not found" />}</Route>
               </Switch>
             </Suspense>
           </Layout>
@@ -126,6 +161,7 @@ export function App() {
 let root: Root | null = null;
 const rootElement = document.getElementById("root");
 
+// Check if the root element exists
 if (!rootElement) {
   throw new Error("Root element not found");
 }
@@ -134,17 +170,17 @@ if (!rootElement) {
 function createOrUpdateRoot() {
   try {
     if (!root) {
-      logDev('Creating new root instance');
-      root = createRoot(rootElement);
+      logDev("Creating new root instance");
+      root = createRoot(rootElement!); // You don't need the ! here anymore, as rootElement is guaranteed to be a valid DOM element.
     }
     root.render(<App />);
   } catch (error) {
-    console.error('[iForge] Root creation/render error:', error);
+    console.error("[iForge] Root creation/render error:", error);
     if (root) {
       try {
         root.unmount();
       } catch (unmountError) {
-        console.error('[iForge] Unmount error:', unmountError);
+        console.error("[iForge] Unmount error:", unmountError);
       }
       root = null;
     }
@@ -162,25 +198,25 @@ declare global {
   }
 }
 
-if (process.env.NODE_ENV === 'development' && import.meta.hot) {
+if (process.env.NODE_ENV === "development" && import.meta.hot) {
   import.meta.hot.dispose(() => {
-    logDev('Cleaning up before HMR update');
+    logDev("Cleaning up before HMR update");
     if (root) {
       try {
         root.unmount();
         root = null;
       } catch (error) {
-        console.error('[iForge] HMR cleanup error:', error);
+        console.error("[iForge] HMR cleanup error:", error);
       }
     }
   });
 
   import.meta.hot.accept(() => {
-    logDev('HMR update received');
+    logDev("HMR update received");
     try {
       createOrUpdateRoot();
     } catch (error) {
-      console.error('[iForge] HMR update failed:', error);
+      console.error("[iForge] HMR update failed:", error);
       window.location.reload();
     }
   });

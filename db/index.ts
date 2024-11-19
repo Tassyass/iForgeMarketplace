@@ -1,5 +1,8 @@
 import { drizzle } from "drizzle-orm/neon-http";
+import * as dotenv from "dotenv";
 import * as schema from "./schema";
+
+dotenv.config(); // Load environment variables from .env file
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -7,4 +10,7 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const db = drizzle({ connection: process.env.DATABASE_URL, schema });
+export const db = drizzle({
+  connection: process.env.DATABASE_URL,
+  schema,
+});
