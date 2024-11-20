@@ -143,7 +143,7 @@ export function App() {
                 <Route path="/profile" component={ProfilePage} />
                 <Route path="/create" component={CreatePage} />
                 <Route path="/login" component={LoginPage} />
-                <Route path="/register" component={RegisterPage} />
+                <Route path="/RegisterPage" component={RegisterPage} />
                 {/* Added route for RegisterPage */}
                 <Route path="/admin" component={AdminPage} />
                 <Route>{() => <ErrorPage message="Page not found" />}</Route>
