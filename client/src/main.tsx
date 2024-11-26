@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Button } from "@/components/ui/button";
 import { ErrorPage } from "@/pages/ErrorPage";
+// import RegisterPage from "@/pages/RegisterPage"; // Import the RegisterPage component
 import RegisterPage from "@/pages/RegisterPage"; // Import the RegisterPage component
 
 // Development logging utility
@@ -141,7 +142,7 @@ export function App() {
                 <Route path="/search" component={SearchPage} />
                 <Route path="/categories" component={CategoriesPage} />
                 <Route path="/profile" component={ProfilePage} />
-                <Route path="/create" component={CreatePage} />
+                <Route path="/Createpage" component={CreatePage} />;
                 <Route path="/login" component={LoginPage} />
                 <Route path="/RegisterPage" component={RegisterPage} />
                 {/* Added route for RegisterPage */}

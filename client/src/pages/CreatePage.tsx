@@ -69,9 +69,14 @@ function CreatePageContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("CreatePage: Form submission started");
-    
+
     // Validate form data
-    if (!formData.title || !formData.description || !formData.price || !formData.category) {
+    if (
+      !formData.title ||
+      !formData.description ||
+      !formData.price ||
+      !formData.category
+    ) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -97,7 +102,10 @@ function CreatePageContent() {
       formPayload.append("description", formData.description);
       formPayload.append("price", formData.price);
       formPayload.append("category", formData.category);
-      formPayload.append("directPrintEnabled", String(formData.directPrintEnabled));
+      formPayload.append(
+        "directPrintEnabled",
+        String(formData.directPrintEnabled),
+      );
       formPayload.append("model", files.model);
       formPayload.append("thumbnail", files.thumbnail);
 
@@ -129,11 +137,13 @@ function CreatePageContent() {
 
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
-    type: "model" | "thumbnail"
+    type: "model" | "thumbnail",
   ) => {
     const file = event.target.files?.[0];
     if (file) {
-      console.log(`CreatePage: File selected for ${type}`, { fileName: file.name });
+      console.log(`CreatePage: File selected for ${type}`, {
+        fileName: file.name,
+      });
       setFiles((prev) => ({ ...prev, [type]: file }));
     }
   };
@@ -149,7 +159,10 @@ function CreatePageContent() {
         <h1 className="text-3xl font-bold">Create New Model</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8 bg-card p-6 rounded-lg shadow-sm">
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-2xl mx-auto space-y-8 bg-card p-6 rounded-lg shadow-sm"
+      >
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
@@ -169,7 +182,10 @@ function CreatePageContent() {
               id="description"
               value={formData.description}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, description: e.target.value }))
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
               }
               required
             />
@@ -239,18 +255,17 @@ function CreatePageContent() {
               id="directPrint"
               checked={formData.directPrintEnabled}
               onCheckedChange={(checked) =>
-                setFormData((prev) => ({ ...prev, directPrintEnabled: checked }))
+                setFormData((prev) => ({
+                  ...prev,
+                  directPrintEnabled: checked,
+                }))
               }
             />
             <Label htmlFor="directPrint">Enable Direct Printing</Label>
           </div>
         </div>
 
-        <Button 
-          type="submit" 
-          disabled={isUploading}
-          className="w-full"
-        >
+        <Button type="submit" disabled={isUploading} className="w-full">
           {isUploading ? "Creating..." : "Create Model"}
         </Button>
       </form>

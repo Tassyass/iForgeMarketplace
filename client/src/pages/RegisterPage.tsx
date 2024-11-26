@@ -137,6 +137,7 @@
 // export default RegisterPage;
 
 
+
 import { useState } from "react";
 import { useUser } from "@/hooks/use-user";
 import { useLocation } from "wouter";
@@ -144,16 +145,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const RegisterPage: React.FC = () => {
   const { register } = useUser();
-  const [, setLocation] = useLocation(); // Use wouter for navigation
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "", // Make sure backend accepts this field
-    username: "", // Make sure backend accepts this field
+    fullName: "",
+    username: "",
     email: "",
     password: "",
   });
@@ -163,7 +163,6 @@ const RegisterPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Make sure the data passed to register matches backend expectations
       const result = await register({
         fullName: formData.fullName,
         username: formData.username,
@@ -174,9 +173,9 @@ const RegisterPage: React.FC = () => {
       if (result.ok) {
         toast({
           title: "Success",
-          description: "Registered successfully! Please verify your email.",
+          description: "Registered successfully!",
         });
-        setLocation("/login"); // Use wouter's navigation
+        setLocation("/login"); // Redirect to the login page
       } else {
         toast({
           title: "Error",
@@ -200,9 +199,7 @@ const RegisterPage: React.FC = () => {
       <div className="max-w-md mx-auto space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold">Register</h1>
-          <p className="text-muted-foreground mt-2">
-            Create an account to get started.
-          </p>
+          <p className="text-muted-foreground mt-2">Create a new account.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -259,30 +256,9 @@ const RegisterPage: React.FC = () => {
             {isLoading ? "Registering..." : "Register"}
           </Button>
         </form>
-
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Button
-              variant="link"
-              className="p-0"
-              onClick={() => setLocation("/login")} // Navigate to login page
-            >
-              Login
-            </Button>
-          </p>
-        </div>
       </div>
     </div>
   );
 };
 
-function RegisterPageWithBoundary() {
-  return (
-    <ErrorBoundary>
-      <RegisterPage />
-    </ErrorBoundary>
-  );
-}
-
-export default RegisterPageWithBoundary;
+export default RegisterPage;
